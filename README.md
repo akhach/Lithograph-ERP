@@ -625,4 +625,91 @@ Do not build today what may only be needed tomorrow.
 
 ---
 
+# 23. Development Setup
+
+## Prerequisites
+
+- Git
+- .NET 10 SDK
+- Node.js 24 LTS (includes npm)
+- PostgreSQL 18 (Windows service), with `C:\Program Files\PostgreSQL\18\bin` on `PATH` for `psql`
+
+Trust the ASP.NET Core HTTPS development certificate once:
+
+```powershell
+dotnet dev-certs https --trust
+```
+
+## 1. Start PostgreSQL and create the development databases
+
+PostgreSQL runs as the `postgresql-x64-18` Windows service. Create a dedicated non-superuser account and two databases (development and integration tests) once, as the `postgres` superuser:
+
+```powershell
+psql -U postgres
+```
+
+```sql
+CREATE ROLE lithograph_dev LOGIN PASSWORD '<choose-a-dev-password>';
+CREATE DATABASE lithograph_erp_dev  OWNER lithograph_dev ENCODING 'UTF8' TEMPLATE template0;
+CREATE DATABASE lithograph_erp_test OWNER lithograph_dev ENCODING 'UTF8' TEMPLATE template0;
+```
+
+## 2. Configure the backend connection
+
+Connection strings are never committed. Store them in ASP.NET Core User Secrets:
+
+```powershell
+cd backend
+dotnet user-secrets set "ConnectionStrings:LithographDb" "Host=localhost;Port=5432;Database=lithograph_erp_dev;Username=lithograph_dev;Password=<password>" --project src/LithographERP.Api
+dotnet user-secrets set "ConnectionStrings:LithographTestDb" "Host=localhost;Port=5432;Database=lithograph_erp_test;Username=lithograph_dev;Password=<password>" --project tests/LithographERP.IntegrationTests
+```
+
+The API refuses to start when `ConnectionStrings:LithographDb` is missing.
+
+## 3. Start the backend
+
+```powershell
+cd backend
+dotnet run --project src/LithographERP.Api --launch-profile https
+```
+
+- Health: `https://localhost:7205/health`
+- Swagger (Development only): `https://localhost:7205/swagger`
+
+## 4. Start the frontend
+
+```powershell
+cd frontend
+npm ci
+copy .env.example .env.local
+npm run dev
+```
+
+Open `http://localhost:5173`. The page shows the backend and database health result.
+
+## 5. Build, lint and test
+
+```powershell
+cd backend
+dotnet build LithographERP.sln
+dotnet test LithographERP.sln
+```
+
+```powershell
+cd frontend
+npm run lint
+npm run format:check
+npm run build
+```
+
+## 6. EF Core tooling
+
+```powershell
+cd backend
+dotnet tool restore
+dotnet ef migrations list -p src/LithographERP.Infrastructure -s src/LithographERP.Api
+```
+
+---
+
 **End of Document**
