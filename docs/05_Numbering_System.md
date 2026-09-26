@@ -1,0 +1,834 @@
+# Lithograph ERP
+
+**Document:** 05_Numbering_System.md  
+**Version:** 1.1  
+**Status:** Approved  
+**Project:** Lithograph ERP  
+
+**Related Documents:**
+- `README.md`
+- `AI_RULES.md`
+- `00_Project_Vision.md`
+- `01_Technology_Stack.md`
+- `02_Architecture.md`
+- `03_Database_Design.md`
+- `04_Data_Dictionary.md`
+
+---
+
+# 1. Purpose
+
+This document defines the Business ID numbering system used throughout Lithograph ERP.
+
+Business IDs are human-readable identifiers used by employees when working with records.
+
+Examples:
+
+```text
+CL-000001
+
+PRJ-2026-000001
+
+ORD-2026-000001
+```
+
+Business IDs exist in addition to internal UUID primary keys.
+
+---
+
+# 2. Business ID vs UUID
+
+Every normal business entity uses an internal UUID.
+
+Example:
+
+```text
+id = 6ca6df32-8fb1-4e63-...
+```
+
+Human-facing entities may also have a Business ID.
+
+Example:
+
+```text
+business_id = ORD-2026-000125
+```
+
+The UUID is used internally by the application.
+
+The Business ID is used by employees.
+
+---
+
+# 3. Business ID Purpose
+
+Business IDs are intended for:
+
+- Search
+- Communication
+- Reports
+- Printed documents
+- Customer references
+- Internal discussions
+- Visual identification of records
+
+Example:
+
+Instead of saying:
+
+```text
+6ca6df32-8fb1-4e63-...
+```
+
+an employee can say:
+
+```text
+ORD-2026-000125
+```
+
+---
+
+# 4. General Rules
+
+Every Business ID must be:
+
+- Unique within its entity type
+- Automatically generated
+- Human-readable
+- Stable
+- Non-editable by normal users
+- Never reused
+
+A Business ID must not change after creation.
+
+---
+
+# 5. Business ID Formats
+
+Initial approved formats:
+
+| Entity | Format | Example |
+|---|---|---|
+| Client | `CL-SEQUENCE` | `CL-000125` |
+| Project | `PRJ-YEAR-SEQUENCE` | `PRJ-2026-000125` |
+| Order | `ORD-YEAR-SEQUENCE` | `ORD-2026-000425` |
+
+Future modules may introduce additional Business ID formats.
+
+Examples could include:
+
+```text
+SUP-000001
+
+PO-2027-000001
+
+INV-2027-000001
+```
+
+These future formats are not required until the corresponding modules exist.
+
+---
+
+# 6. Client Business IDs
+
+Client numbering does not reset annually.
+
+Format:
+
+```text
+CL-000001
+```
+
+Examples:
+
+```text
+CL-000001
+
+CL-000002
+
+CL-000003
+```
+
+Client numbering continues indefinitely.
+
+---
+
+# 7. Project Business IDs
+
+Project numbering includes the creation year.
+
+Format:
+
+```text
+PRJ-YYYY-SEQUENCE
+```
+
+Example:
+
+```text
+PRJ-2026-000001
+```
+
+Project sequence resets at the beginning of each calendar year.
+
+Example:
+
+```text
+PRJ-2026-000874
+
+PRJ-2027-000001
+```
+
+---
+
+# 8. Order Business IDs
+
+Order numbering includes the creation year.
+
+Format:
+
+```text
+ORD-YYYY-SEQUENCE
+```
+
+Example:
+
+```text
+ORD-2026-000001
+```
+
+Order sequence resets at the beginning of each calendar year.
+
+Example:
+
+```text
+ORD-2026-002415
+
+ORD-2027-000001
+```
+
+---
+
+# 9. Year Definition
+
+The year in a Business ID is the calendar year in which the record is created.
+
+Example:
+
+A Project created on December 31, 2026:
+
+```text
+PRJ-2026-000825
+```
+
+A Project created on January 1, 2027:
+
+```text
+PRJ-2027-000001
+```
+
+Changing a Project deadline or completion date does not change its Business ID.
+
+---
+
+# 10. Sequence Length
+
+Initial sequence length is:
+
+```text
+6 digits
+```
+
+Examples:
+
+```text
+000001
+
+000125
+
+004587
+```
+
+This provides enough numbering space while keeping Business IDs readable.
+
+---
+
+# 11. Sequence Starting Value
+
+Each new sequence starts at:
+
+```text
+1
+```
+
+Displayed with leading zeros:
+
+```text
+000001
+```
+
+---
+
+# 12. Sequence Gaps
+
+Sequence gaps are allowed.
+
+Example:
+
+```text
+ORD-2026-000123
+
+ORD-2026-000124
+
+ORD-2026-000126
+```
+
+A missing number does not represent an error.
+
+Gaps may occur because of:
+
+- Database transaction rollback
+- Failed creation
+- Cancelled operations
+- Concurrent record creation
+- Technical sequence behavior
+
+The system must not attempt to reuse missing sequence numbers.
+
+---
+
+# 13. Never Reuse Numbers
+
+Once a Business ID has been issued, it must never be reused.
+
+This applies even if the corresponding record is:
+
+- Deleted
+- Soft deleted
+- Cancelled
+- Deactivated
+
+Example:
+
+If:
+
+```text
+ORD-2026-000125
+```
+
+is deleted, the next Order must not reuse:
+
+```text
+ORD-2026-000125
+```
+
+---
+
+# 14. Business ID Stability
+
+Business IDs are permanent.
+
+Normal users cannot change them.
+
+Example:
+
+```text
+ORD-2026-000125
+```
+
+must remain the same throughout the lifetime of the Order.
+
+Changing:
+
+- Project
+- Status
+- Deadline
+- Order Type
+- Selling Price
+- Cost Price
+
+must not change the Business ID.
+
+---
+
+# 15. Database Storage
+
+Business IDs should normally be stored in a dedicated column:
+
+```text
+business_id
+```
+
+Example:
+
+```text
+orders.orders.business_id
+```
+
+The column must have a unique constraint or unique index appropriate to the entity.
+
+---
+
+# 16. Internal UUID
+
+Business IDs do not replace UUID primary keys.
+
+Example table concept:
+
+```text
+id
+business_id
+project_id
+order_type_id
+...
+```
+
+`id` is used for database identity.
+
+`business_id` is used for human interaction.
+
+---
+
+# 17. Business ID Generation
+
+Business IDs must be generated by the backend.
+
+The frontend must not calculate or assign Business ID sequence values.
+
+Correct flow:
+
+```text
+Frontend requests new Order
+        ↓
+Backend creates Order
+        ↓
+Backend generates Business ID
+        ↓
+Database stores record
+        ↓
+Business ID returned to frontend
+```
+
+---
+
+# 18. Concurrency
+
+Business ID generation must be safe when multiple users create records at the same time.
+
+The system must prevent duplicate Business IDs.
+
+Generation should use a database-safe sequence or another reliable atomic mechanism.
+
+Do not use logic such as:
+
+```text
+SELECT MAX(number) + 1
+```
+
+because concurrent users may generate duplicates.
+
+---
+
+# 19. Sequence Storage
+
+The exact technical implementation may use:
+
+- PostgreSQL sequences
+- A dedicated numbering table
+- Another database-safe atomic mechanism
+
+The implementation should remain simple.
+
+The selected mechanism must support:
+
+- Uniqueness
+- Concurrency
+- Yearly reset where required
+- Non-reuse
+- Allowed gaps
+
+---
+
+# 20. Configurability
+
+Version 1 does not require users to configure numbering formats through the UI.
+
+Prefixes and formats may initially be defined by application configuration or code according to this specification.
+
+Do not build a complex numbering designer unless a real requirement appears.
+
+---
+
+# 21. Prefix Rules
+
+Approved initial prefixes:
+
+```text
+CL
+PRJ
+ORD
+```
+
+Prefixes must remain uppercase when displayed.
+
+Prefixes should be short and recognizable.
+
+---
+
+# 22. Separators
+
+The approved separator is:
+
+```text
+-
+```
+
+Examples:
+
+```text
+CL-000125
+
+PRJ-2026-000125
+
+ORD-2026-000125
+```
+
+Do not mix separators such as:
+
+```text
+ORD/2026/000125
+
+ORD_2026_000125
+
+ORD.2026.000125
+```
+
+without an approved specification change.
+
+---
+
+# 23. Searching by Business ID
+
+Users must be able to search important entities using their Business ID.
+
+Examples:
+
+```text
+ORD-2026-000125
+
+PRJ-2026-000042
+
+CL-000081
+```
+
+Business ID lookup should be indexed and fast.
+
+---
+
+# 24. Display Rules
+
+Business IDs should be visible in important business interfaces.
+
+Examples:
+
+- Client lists
+- Project lists
+- Order lists
+- Project workspace
+- Order workspace
+- Reports
+- Search results
+
+UUID values should normally remain hidden from users.
+
+---
+
+# 25. Business ID Labels
+
+The UI may display Business IDs simply as:
+
+```text
+Order ID
+
+Project ID
+
+Client ID
+```
+
+when understandable to users.
+
+Internally, documentation should continue to distinguish:
+
+```text
+UUID
+```
+
+from:
+
+```text
+Business ID
+```
+
+to avoid confusion.
+
+---
+
+# 26. Sorting
+
+Business IDs should not automatically be assumed to represent chronological order across all years or entity types.
+
+For date-based sorting, use proper date fields such as:
+
+```text
+created_at
+```
+
+Business IDs are identifiers first.
+
+---
+
+# 27. Imported Historical Data
+
+If historical business data is imported later, its Business ID strategy must be explicitly designed.
+
+Do not automatically regenerate historical identifiers without considering existing business references.
+
+This is outside Version 1 unless an import requirement appears.
+
+---
+
+# 28. Future Entities
+
+Future modules may define Business IDs for entities such as:
+
+```text
+Supplier
+
+Purchase Order
+
+Invoice
+
+Delivery
+
+Warehouse Receipt
+```
+
+Their formats should be added to this document when those entities are approved.
+
+Do not reserve unnecessary numbering systems today.
+
+---
+
+# 29. Example Numbering
+
+Example Client:
+
+```text
+CL-000087
+```
+
+Example Project:
+
+```text
+PRJ-2026-000042
+```
+
+Example Orders inside that Project:
+
+```text
+ORD-2026-000351
+
+ORD-2026-000352
+
+ORD-2026-000353
+```
+
+Order numbering is global for Orders.
+
+It is not restarted per Project.
+
+---
+
+# 30. Project-Based Order Numbering
+
+Version 1 does not use formats such as:
+
+```text
+PRJ-2026-000042-01
+
+PRJ-2026-000042-02
+```
+
+for the primary Order Business ID.
+
+Orders receive their own global yearly Business IDs.
+
+Relationships to Projects are maintained through `project_id`.
+
+This keeps Order identification simple and unique.
+
+---
+
+# 31. Usernames Are Not Business IDs
+
+Authentication usernames are not part of the Business ID numbering system.
+
+Example:
+
+```text
+director
+
+designer1
+
+operator1
+```
+
+These are login identifiers.
+
+They follow Authentication rules rather than business numbering rules.
+
+---
+
+# 32. Employee Business IDs
+
+Version 1 does not require an Employee Business ID unless the Employees module identifies a real need for one.
+
+Do not create numbering for Employees merely for consistency.
+
+The Employees module specification will decide whether an Employee Business ID provides value.
+
+---
+
+# 33. Checklist Items
+
+Checklist Items do not need Business IDs.
+
+They use internal database identity and Order relationship.
+
+Users interact with checklist items inside the Order Workspace rather than by reference number.
+
+---
+
+# 34. Calculator Templates
+
+Calculator Templates do not require human Business IDs in Version 1.
+
+They may use:
+
+- UUID
+- Template name
+- Future version information
+
+A numbering system should be added only if it provides a real user benefit.
+
+---
+
+# 35. Business ID Generation Failure
+
+If Business ID generation fails, record creation must fail safely.
+
+The system must never create a normal business entity with:
+
+- Duplicate Business ID
+- Invalid Business ID
+- Missing required Business ID
+
+when that entity requires one.
+
+---
+
+# 36. Business ID Immutability
+
+Backend APIs must not allow ordinary update requests to modify `business_id`.
+
+The frontend should display Business IDs as read-only values.
+
+---
+
+# 37. Auditability
+
+Business IDs should make historical records easier to discuss and audit.
+
+Example:
+
+```text
+Customer requested a correction to ORD-2026-000425.
+```
+
+This is one of the primary reasons for using Business IDs in addition to UUIDs.
+
+---
+
+# 38. Formatting Responsibility
+
+The system should have one consistent backend mechanism responsible for generating and formatting Business IDs.
+
+Avoid implementing Business ID formatting separately in:
+
+- Controllers
+- React components
+- Reports
+- Multiple modules
+
+This prevents format inconsistencies.
+
+---
+
+# 39. Version 1 Numbering Summary
+
+Approved initial numbering:
+
+```text
+Client
+
+CL-000001
+CL-000002
+...
+No annual reset
+```
+
+```text
+Project
+
+PRJ-2026-000001
+PRJ-2026-000002
+...
+Annual reset
+```
+
+```text
+Order
+
+ORD-2026-000001
+ORD-2026-000002
+...
+Annual reset
+```
+
+---
+
+# 40. Final Numbering Principle
+
+Business IDs exist to make records easy for people to identify.
+
+UUIDs exist to make records safe and reliable for the system.
+
+Keep these responsibilities separate.
+
+Business numbering must remain:
+
+```text
+Simple
+
+Unique
+
+Readable
+
+Permanent
+
+Automatic
+```
+
+---
+
+**End of Document**

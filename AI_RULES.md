@@ -1,0 +1,874 @@
+# Lithograph ERP — AI Development Rules
+
+**Document:** AI_RULES.md  
+**Purpose:** Mandatory instructions for AI coding assistants working on Lithograph ERP.
+
+These rules apply to all generated, modified, reviewed and refactored code.
+
+---
+
+# 1. Mandatory Reading Before Work
+
+Before making any project changes:
+
+1. Read this file.
+2. Read `README.md`.
+3. Read the relevant files inside `/docs`.
+4. Inspect the existing implementation of the affected module.
+5. Inspect related Entity Framework Core migrations if database structures are involved.
+6. Understand existing dependencies before modifying code.
+
+Do not begin implementation based only on a short user prompt when detailed project documentation already exists.
+
+---
+
+# 2. Documentation Is Authoritative
+
+The approved Markdown documentation defines intended system behavior.
+
+Do not silently change:
+
+- Architecture
+- Database structure
+- Module boundaries
+- Technology stack
+- Business terminology
+- Authentication rules
+- Permission rules
+- Business rules
+- UI conventions
+- Calculator behavior
+
+If implementation and documentation conflict, identify the conflict before introducing a new design.
+
+Do not silently assume that the existing code is correct when it conflicts with approved documentation.
+
+---
+
+# 3. Keep the Project Simple
+
+Lithograph ERP intentionally prefers simple solutions.
+
+Do not introduce unnecessary:
+
+- Microservices
+- Message brokers
+- Event buses
+- CQRS
+- Event sourcing
+- Distributed transactions
+- Generic enterprise frameworks
+- Excessive abstraction layers
+- Complex dependency injection patterns
+- Infrastructure services
+
+unless explicitly required by approved documentation.
+
+Version 1 uses a Modular Monolith.
+
+---
+
+# 4. Work Module by Module
+
+Make changes only to the module required for the current task.
+
+Avoid unrelated refactoring.
+
+Do not modify another module merely because its implementation could be improved.
+
+Cross-module changes should happen only when they are necessary for the requested feature.
+
+The project should behave like LEGO:
+
+```text
+Independent Module
+        +
+Independent Module
+        +
+Independent Module
+        =
+Lithograph ERP
+```
+
+---
+
+# 5. Do Not Invent Features
+
+Do not add functionality that is not explicitly requested or documented.
+
+Do not automatically add:
+
+- Email authentication
+- Email verification
+- Social login
+- Two-factor authentication
+- Warehouse management
+- Accounting
+- CRM
+- Purchasing
+- Production scheduling
+- AI functionality
+- Notifications
+- Customer portals
+- Supplier portals
+- Mobile applications
+- Desktop helper applications
+
+Future possibilities documented in the project are not current implementation requirements.
+
+---
+
+# 6. Approved Technology Stack
+
+Use the approved stack.
+
+## Backend
+
+```text
+C#
+ASP.NET Core
+Entity Framework Core
+```
+
+## Frontend
+
+```text
+React
+TypeScript
+Material UI
+```
+
+## Database
+
+```text
+PostgreSQL
+```
+
+## API
+
+```text
+REST
+```
+
+## Architecture
+
+```text
+Modular Monolith
+```
+
+Do not replace these technologies without explicit approval.
+
+---
+
+# 7. Version 1 Module Boundaries
+
+Major Version 1 modules are:
+
+```text
+Authentication
+Employees
+Clients
+Projects
+Orders
+Calculator
+Reports
+```
+
+Small features stay inside their owning modules.
+
+Example:
+
+```text
+Authentication
+├── Users
+├── Roles
+├── Permissions
+└── Sessions
+```
+
+```text
+Orders
+├── Order Types
+├── Checklists
+└── Folder Links
+```
+
+Do not create unnecessary independent modules or services.
+
+---
+
+# 8. Database Architecture
+
+Lithograph ERP uses:
+
+```text
+One PostgreSQL Database
+```
+
+Major modules may own separate PostgreSQL schemas.
+
+Example:
+
+```text
+auth
+employees
+clients
+projects
+orders
+calculator
+```
+
+The database remains one deployment in Version 1.
+
+---
+
+# 9. Database Ownership
+
+Each module owns its own database structures.
+
+A module should not directly modify another module's tables.
+
+Cross-module operations should go through clearly defined application or service interfaces.
+
+Avoid hidden dependencies.
+
+---
+
+# 10. Database Naming
+
+All PostgreSQL identifiers must use lowercase `snake_case`.
+
+This applies to:
+
+- Schemas
+- Tables
+- Columns
+- Indexes
+- Constraints
+
+Correct:
+
+```text
+auth.users
+
+projects.project_members
+
+orders.checklist_items
+
+project_id
+
+created_at
+
+selling_price
+```
+
+Incorrect:
+
+```text
+Auth.Users
+
+ProjectMembers
+
+ProjectID
+
+CreatedAt
+
+SellingPrice
+```
+
+Avoid quoted PostgreSQL identifiers unless absolutely necessary.
+
+---
+
+# 11. Primary Keys
+
+Normal business entities use UUID primary keys.
+
+Example:
+
+```text
+id UUID
+```
+
+Pure junction tables do not require artificial UUID identifiers when a composite primary key is simpler.
+
+Example:
+
+```text
+auth.user_roles
+
+user_id
+role_id
+
+PRIMARY KEY (user_id, role_id)
+```
+
+Do not add unnecessary IDs to simple relationship tables.
+
+---
+
+# 12. Business IDs
+
+Human-facing business entities may have automatically generated Business IDs.
+
+Examples:
+
+```text
+CL-000001
+
+PRJ-2026-000001
+
+ORD-2026-000001
+```
+
+Business IDs:
+
+- Must be unique
+- Are generated by the system
+- Cannot normally be edited by users
+- Must never be reused
+- May contain sequence gaps
+
+Sequence gaps are acceptable.
+
+The UUID remains the actual database primary key.
+
+Do not call generated Business IDs database Natural Keys unless the documentation explicitly changes terminology.
+
+---
+
+# 13. Dates and Times
+
+Use PostgreSQL timezone-aware timestamps for stored timestamps.
+
+Use UTC internally.
+
+Convert dates and times for user presentation when required.
+
+Avoid mixing local server time with stored UTC values.
+
+---
+
+# 14. Database Migrations
+
+All database schema changes must use Entity Framework Core migrations.
+
+Do not manually change production database schemas.
+
+Never modify a migration that has already been applied to a shared or production database.
+
+Create a new migration instead.
+
+Migration names should clearly describe the change.
+
+---
+
+# 15. Soft Delete
+
+Do not automatically add soft delete to every table.
+
+Soft delete should be used when:
+
+- Historical business information must remain
+- References to the record must remain valid
+- Accidental deletion needs recovery
+
+Temporary and relationship records may use physical deletion when appropriate.
+
+Examples that normally do not require soft delete:
+
+```text
+sessions
+
+user_roles
+
+role_permissions
+```
+
+Follow the relevant module specification.
+
+---
+
+# 16. Audit Fields
+
+Use audit fields where they provide meaningful business value.
+
+Typical business entities may contain:
+
+```text
+created_at
+
+created_by
+
+updated_at
+
+updated_by
+```
+
+Do not automatically add audit fields to every temporary or junction table.
+
+System bootstrap records must support creation when no authenticated user exists yet.
+
+---
+
+# 17. Authentication Security
+
+Never implement custom cryptography.
+
+Use established ASP.NET Core security mechanisms for:
+
+- Password hashing
+- Authentication
+- Secure tokens
+- Cryptographically secure random values
+
+Never:
+
+- Store plaintext passwords
+- Log passwords
+- Return password hashes through APIs
+- Display password hashes
+- Store raw session tokens in the database
+- Commit secrets to Git
+- Hardcode production credentials
+
+---
+
+# 18. Initial Director Account
+
+Lithograph ERP has no public registration.
+
+When the application starts for the first time and no user exists, the system displays initial setup.
+
+The setup asks for the initial Director password.
+
+The system creates:
+
+```text
+Username: director
+Role: Director
+```
+
+The Director has full system permissions.
+
+The Director may later change:
+
+- Username
+- Password
+
+The Director creates other user accounts manually.
+
+The system must prevent removal, deletion or deactivation of the final active Director account.
+
+---
+
+# 19. User Is Not Employee
+
+Never merge Users and Employees.
+
+## User
+
+```text
+ERP Login Account
+```
+
+Responsible for:
+
+- Username
+- Password
+- Roles
+- Permissions
+- Sessions
+
+## Employee
+
+```text
+Person Working for Lithograph
+```
+
+Responsible for business information about that person.
+
+An Employee may optionally link to one User account.
+
+An Employee may exist without ERP login access.
+
+Employee information must not be added to `auth.users`.
+
+Authentication information must not be added to Employee records.
+
+---
+
+# 20. Project Team
+
+Employees may be assigned to a Project using these project roles:
+
+```text
+Owner
+
+Assignee
+
+Participant
+
+Observer
+```
+
+The Project Team applies to all Orders belonging to the Project in Version 1.
+
+Do not create Order-specific employee assignment functionality unless the approved specification changes.
+
+---
+
+# 21. Orders
+
+Each Order belongs to one Project.
+
+Each Order has an Order Type.
+
+Order Type describes what kind of work is being performed.
+
+Examples:
+
+```text
+UV Printing
+
+CO₂ Laser Cutting
+
+CNC Routing
+
+Graphic Design
+
+Installation
+
+Outsourced Work
+```
+
+Do not hardcode Order Types into application code.
+
+They must be represented as configurable database data.
+
+---
+
+# 22. Selling Price and Cost Price
+
+Orders store:
+
+```text
+selling_price
+
+cost_price
+```
+
+These values are historical snapshots of the result of the Order calculation.
+
+Profit is not persisted.
+
+Calculate Profit when needed:
+
+```text
+profit = selling_price - cost_price
+```
+
+Do not create a stored `profit` column without an approved specification change.
+
+---
+
+# 23. Calculator
+
+The Calculator is an internal Lithograph ERP feature.
+
+Do not make Microsoft Excel a runtime dependency.
+
+Each Order Type may reference a Calculator Template.
+
+When an Order uses that Order Type, the corresponding calculator is used.
+
+The Calculator Template Designer will provide spreadsheet-like behavior.
+
+Do not attempt to reproduce Microsoft Excel completely.
+
+The calculation engine will support approximately 30 approved functions.
+
+Only functions defined in the approved Calculator specification should be implemented.
+
+---
+
+# 24. Calculator Template Changes
+
+Calculator Templates must eventually support safe historical behavior.
+
+Changes to a calculator must not silently alter historical Order calculation results.
+
+When calculator versioning is implemented, follow the Calculator module specification exactly.
+
+Do not invent versioning mechanisms before they are documented.
+
+---
+
+# 25. Checklist
+
+Version 1 checklist functionality is intentionally minimal.
+
+A user manually adds checklist rows.
+
+A checklist item contains:
+
+```text
+text
+
+is_completed
+
+sort_order
+```
+
+Do not automatically add:
+
+- Checklist templates
+- Employee assignment
+- Deadline
+- Folder path
+- File name
+- Notes
+- Priority
+- Automatic checklist generation
+
+unless approved documentation explicitly introduces these features.
+
+---
+
+# 26. Folder Links
+
+Version 1 allows Orders to store local or network folder paths.
+
+Example:
+
+```text
+\\server\orders\2026\ORD-2026-000125
+```
+
+Version 1 does not include:
+
+- Windows Explorer launching
+- Local desktop agents
+- File synchronization
+- File uploads through this feature
+- Automatic folder creation
+- Network filesystem manipulation
+
+Store the path only.
+
+---
+
+# 27. Frontend Philosophy
+
+Lithograph ERP is a professional desktop-first business application running inside a browser.
+
+It is not a marketing website.
+
+Prioritize:
+
+```text
+Speed
+
+Clarity
+
+Consistency
+
+Productivity
+```
+
+Use Material UI consistently.
+
+Reuse existing UI components whenever practical.
+
+Avoid creating visually inconsistent alternatives.
+
+---
+
+# 28. Record Workspaces
+
+Important records such as Projects and Orders should behave like workspaces.
+
+Related information should be accessible from the same record context.
+
+Use simple:
+
+- Sections
+- Tabs
+- Panels
+
+when useful.
+
+Avoid unnecessary deep navigation.
+
+---
+
+# 29. Browser and Operating-System Behavior
+
+Do not override standard browser or operating-system keyboard shortcuts without an explicit requirement.
+
+Keyboard shortcuts may be added when they:
+
+- Improve productivity
+- Are documented
+- Do not conflict with expected browser behavior
+
+---
+
+# 30. REST API Rules
+
+Keep APIs straightforward.
+
+Use:
+
+- Clear endpoint names
+- Clear request DTOs
+- Clear response DTOs
+- Server-side validation
+- Appropriate HTTP status codes
+
+Do not place business logic inside controllers.
+
+Do not expose Entity Framework database entities directly when API DTOs are more appropriate.
+
+---
+
+# 31. Validation
+
+Validate important data on the server even when the frontend also validates it.
+
+Frontend validation improves usability.
+
+Backend validation protects business rules and database consistency.
+
+Never trust frontend validation alone.
+
+---
+
+# 32. Error Handling
+
+Errors shown to users should be understandable.
+
+Never expose:
+
+- Stack traces
+- SQL queries
+- Connection strings
+- Internal exception details
+- Password information
+- Tokens
+- Security-sensitive configuration
+
+Log technical information on the server where appropriate.
+
+---
+
+# 33. Dependencies
+
+Before adding a new NuGet or npm package:
+
+1. Check whether the existing framework already provides the functionality.
+2. Prefer mature and maintained packages.
+3. Avoid large dependencies for trivial functionality.
+4. Confirm the package is actually required for the task.
+
+Do not add packages merely because they are convenient.
+
+---
+
+# 34. Testing
+
+Important business behavior must be testable.
+
+New features should include appropriate tests.
+
+Prioritize tests for:
+
+- Business rules
+- Authentication
+- Permissions
+- Calculations
+- Data integrity
+- Important workflows
+
+Do not create meaningless tests solely to increase test counts.
+
+---
+
+# 35. Existing Working Code
+
+Do not replace working implementations without a task-related reason.
+
+Before removing or significantly restructuring existing code:
+
+1. Determine what depends on it.
+2. Preserve existing documented behavior.
+3. Keep changes as small as reasonably possible.
+4. Avoid unrelated refactoring.
+
+---
+
+# 36. Documentation Synchronization
+
+When an approved implementation changes an architectural or business rule, update the corresponding Markdown documentation.
+
+Code and documentation must not intentionally contradict each other.
+
+Documentation changes should accompany implementation changes when appropriate.
+
+---
+
+# 37. Task Completion
+
+Before declaring a coding task complete:
+
+- Ensure backend code builds.
+- Ensure frontend code builds.
+- Run relevant tests.
+- Check for TypeScript errors.
+- Review Entity Framework migrations if the database changed.
+- Verify unrelated modules were not accidentally changed.
+- Check that the implementation follows the relevant Markdown specifications.
+- Summarize the changes made.
+
+Do not claim completion when the project does not compile.
+
+---
+
+# 38. Default Decision Rule
+
+When multiple valid implementations exist, choose the simplest solution that:
+
+- Follows approved documentation
+- Solves the current requirement
+- Is easy to understand
+- Is easy to maintain
+- Can be extended later if necessary
+
+Do not implement hypothetical future functionality.
+
+---
+
+# 39. When Requirements Are Unclear
+
+Do not invent major business behavior.
+
+For minor implementation details, choose the simplest reasonable implementation consistent with the documentation.
+
+For architectural, database or business-rule ambiguity, identify the uncertainty before introducing a permanent design decision.
+
+---
+
+# 40. Primary Goal
+
+AI coding assistance should make Lithograph ERP:
+
+- Simpler
+- More consistent
+- Easier to maintain
+- Faster to develop
+
+It must not make the project unnecessarily complicated.
+
+---
+
+**End of Document**
