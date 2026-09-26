@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\LithographERP.Api\LithographERP.Api.csproj" />
+    <ProjectReference Include="..\..\src\LithographERP.Infrastructure\LithographERP.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

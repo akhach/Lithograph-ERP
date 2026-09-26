@@ -685,7 +685,7 @@ copy .env.example .env.local
 npm run dev
 ```
 
-Open `http://localhost:5173`. The page shows the backend and database health result.
+Open `http://localhost:5173`. When the database has no users, the first screen is initial setup for the username `director`. After setup, sign in with that username and password.
 
 ## 5. Build, lint and test
 
@@ -707,8 +707,11 @@ npm run build
 ```powershell
 cd backend
 dotnet tool restore
+dotnet ef database update -p src/LithographERP.Infrastructure -s src/LithographERP.Api
 dotnet ef migrations list -p src/LithographERP.Infrastructure -s src/LithographERP.Api
 ```
+
+The Development host also applies pending migrations on startup, then synchronizes the permission catalog and the protected Director role. That startup step does not create a user.
 
 ---
 

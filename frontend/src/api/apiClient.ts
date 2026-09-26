@@ -42,6 +42,12 @@ async function readJson(response: Response): Promise<unknown> {
   return text ? (JSON.parse(text) as unknown) : null
 }
 
+let unauthorizedHandler: (() => void) | null = null
+
+export function setUnauthorizedHandler(handler: (() => void) | null): void {
+  unauthorizedHandler = handler
+}
+
 export async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers)
   headers.set('Accept', 'application/json')
@@ -49,11 +55,15 @@ export async function apiRequest<T>(path: string, init: RequestInit = {}): Promi
     headers.set('Content-Type', 'application/json')
   }
 
-  const response = await fetch(`${getApiBaseUrl()}${path}`, { ...init, headers })
+  const response = await fetch(`${getApiBaseUrl()}${path}`, {
+    ...init,
+    headers,
+    credentials: 'include',
+  })
   const body = await readJson(response)
 
   if (!response.ok) {
-    throw new ApiError(
+    const error = new ApiError(
       response.status,
       isApiErrorBody(body)
         ? body
@@ -63,6 +73,15 @@ export async function apiRequest<T>(path: string, init: RequestInit = {}): Promi
             errors: null,
           },
     )
+    if (
+      response.status === 401 &&
+      path !== '/api/auth/login' &&
+      path !== '/api/auth/setup' &&
+      path !== '/api/auth/setup-status'
+    ) {
+      unauthorizedHandler?.()
+    }
+    throw error
   }
 
   return body as T

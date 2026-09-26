@@ -4,12 +4,12 @@ using LithographERP.Api.Health;
 
 namespace LithographERP.IntegrationTests;
 
-public class HealthEndpointTests
+[Collection(DatabaseCollection.Name)]
+public class HealthEndpointTests(LithographApiFactory factory)
 {
     [Fact]
     public async Task GetHealth_ReturnsHealthy_WhenDatabaseReachable()
     {
-        await using var factory = new LithographApiFactory();
         using var client = factory.CreateClient();
 
         var response = await client.GetAsync("/health");
@@ -24,9 +24,9 @@ public class HealthEndpointTests
     [Fact]
     public void Startup_FailsClearly_WhenConnectionStringMissing()
     {
-        using var factory = LithographApiFactory.WithoutConnectionString();
+        using var missing = LithographApiFactory.WithoutConnectionString();
 
-        var exception = Assert.ThrowsAny<Exception>(() => factory.CreateClient());
+        var exception = Assert.ThrowsAny<Exception>(() => missing.CreateClient());
 
         Assert.Contains("Database connection configuration missing", GetFullMessage(exception));
     }

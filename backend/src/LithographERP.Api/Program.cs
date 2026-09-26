@@ -1,10 +1,16 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using LithographERP.Api.Authentication;
 using LithographERP.Api.Errors;
 using LithographERP.Api.Health;
+using LithographERP.Application.Modules.Authentication;
+using LithographERP.Domain.Modules.Authentication;
 using LithographERP.Infrastructure;
 using LithographERP.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 const string DevelopmentCorsPolicy = "DevelopmentFrontend";
 
@@ -17,7 +23,7 @@ if (string.IsNullOrWhiteSpace(connectionString))
         "Database connection configuration missing. Set 'ConnectionStrings:LithographDb' (User Secrets or environment variable).");
 }
 
-builder.Services.AddInfrastructure(connectionString);
+builder.Services.AddInfrastructure(connectionString, builder.Configuration);
 
 builder.Services
     .AddHealthChecks()
@@ -42,12 +48,29 @@ builder.Services
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
+builder.Services
+    .AddAuthentication(SessionAuthenticationHandler.SchemeName)
+    .AddScheme<AuthenticationSchemeOptions, SessionAuthenticationHandler>(SessionAuthenticationHandler.SchemeName, _ => { });
+
+builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
+builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, ApiAuthorizationResultHandler>();
+builder.Services.AddAuthorization(options =>
+{
+    foreach (var permission in PermissionCatalog.All)
+    {
+        options.AddPolicy(permission.Code, policy =>
+            policy.RequireAuthenticatedUser().AddRequirements(new PermissionRequirement(permission.Code)));
+    }
+});
+
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
 if (allowedOrigins.Length > 0)
 {
     builder.Services.AddCors(options =>
         options.AddPolicy(DevelopmentCorsPolicy, policy =>
-            policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod()));
+        {
+            policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+        }));
 }
 
 if (builder.Environment.IsDevelopment())
@@ -73,6 +96,22 @@ if (allowedOrigins.Length > 0)
     app.UseCors(DevelopmentCorsPolicy);
 }
 
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapControllers();
+
+if (!EF.IsDesignTime)
+{
+    await using var scope = app.Services.CreateAsyncScope();
+    var bootstrap = scope.ServiceProvider.GetRequiredService<IAuthenticationBootstrap>();
+    if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
+    {
+        var db = scope.ServiceProvider.GetRequiredService<LithographDbContext>();
+        await db.Database.MigrateAsync();
+    }
+
+    await bootstrap.SynchronizeAsync();
+}
 
 app.Run();
