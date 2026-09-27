@@ -56,4 +56,8 @@ export const PermissionCodes = {
   employeesEdit: 'employees.edit',
   employeesActivate: 'employees.activate',
   employeesLinkUser: 'employees.link_user',
+  clientsView: 'clients.view',
+  clientsCreate: 'clients.create',
+  clientsEdit: 'clients.edit',
+  clientsActivate: 'clients.activate',
 } as const

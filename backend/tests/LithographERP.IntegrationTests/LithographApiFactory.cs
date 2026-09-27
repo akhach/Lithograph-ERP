@@ -42,6 +42,9 @@ public sealed class LithographApiFactory : WebApplicationFactory<Program>, IAsyn
             var db = scope.ServiceProvider.GetRequiredService<LithographDbContext>();
             await db.Database.ExecuteSqlRawAsync(
                 """
+                UPDATE clients.clients SET created_by = NULL, updated_by = NULL;
+                DELETE FROM clients.clients;
+                SELECT setval('clients.client_business_id_seq', 1, false);
                 UPDATE employees.employees SET created_by = NULL, updated_by = NULL;
                 DELETE FROM employees.employees;
                 UPDATE auth.users SET created_by = NULL, updated_by = NULL;

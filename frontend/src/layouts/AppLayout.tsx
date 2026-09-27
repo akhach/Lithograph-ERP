@@ -27,6 +27,11 @@ export function AppLayout() {
           <Button color="inherit" component={Link} to="/">
             Home
           </Button>
+          {auth.hasPermission(PermissionCodes.clientsView) ? (
+            <Button color="inherit" component={Link} to="/clients">
+              Clients
+            </Button>
+          ) : null}
           {auth.hasPermission(PermissionCodes.usersView) ? (
             <Button color="inherit" component={Link} to="/users">
               Users

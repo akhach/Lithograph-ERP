@@ -7,6 +7,8 @@ import { PermissionRoute } from '../modules/auth/PermissionRoute.tsx'
 import { SetupPage } from '../modules/auth/SetupPage.tsx'
 import { PermissionCodes } from '../modules/auth/authTypes.ts'
 import { SessionStatus } from '../modules/auth/SessionStatus.tsx'
+import { ClientDetailPage } from '../modules/clients/ClientDetailPage.tsx'
+import { ClientsPage } from '../modules/clients/ClientsPage.tsx'
 
 export const appRouter = createBrowserRouter([
   {
@@ -33,6 +35,22 @@ export const appRouter = createBrowserRouter([
           {
             path: 'admin/employees',
             element: <PermissionRoute permission={PermissionCodes.employeesView} />,
+          },
+          {
+            path: 'clients',
+            element: (
+              <PermissionRoute permission={PermissionCodes.clientsView}>
+                <ClientsPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: 'clients/:clientId',
+            element: (
+              <PermissionRoute permission={PermissionCodes.clientsView}>
+                <ClientDetailPage />
+              </PermissionRoute>
+            ),
           },
           { path: '*', element: <Navigate to="/" replace /> },
         ],
