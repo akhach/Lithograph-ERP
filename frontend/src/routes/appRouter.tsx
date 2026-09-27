@@ -11,6 +11,9 @@ import { ClientDetailPage } from '../modules/clients/ClientDetailPage.tsx'
 import { ClientsPage } from '../modules/clients/ClientsPage.tsx'
 import { ProjectDetailPage } from '../modules/projects/ProjectDetailPage.tsx'
 import { ProjectsPage } from '../modules/projects/ProjectsPage.tsx'
+import { OrderDetailPage } from '../modules/orders/OrderDetailPage.tsx'
+import { OrderTypesPage } from '../modules/orders/OrderTypesPage.tsx'
+import { OrdersPage } from '../modules/orders/OrdersPage.tsx'
 
 export const appRouter = createBrowserRouter([
   {
@@ -67,6 +70,30 @@ export const appRouter = createBrowserRouter([
             element: (
               <PermissionRoute permission={PermissionCodes.projectsView}>
                 <ProjectDetailPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: 'orders',
+            element: (
+              <PermissionRoute permission={PermissionCodes.ordersView}>
+                <OrdersPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: 'orders/:orderId',
+            element: (
+              <PermissionRoute permission={PermissionCodes.ordersView}>
+                <OrderDetailPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: 'admin/order-types',
+            element: (
+              <PermissionRoute permission={PermissionCodes.ordersManageTypes}>
+                <OrderTypesPage />
               </PermissionRoute>
             ),
           },

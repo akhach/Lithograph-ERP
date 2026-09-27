@@ -5,4 +5,6 @@ public interface IBusinessIdGenerator
     Task<string> GenerateClientBusinessIdAsync(CancellationToken cancellationToken = default);
 
     Task<string> GenerateProjectBusinessIdAsync(CancellationToken cancellationToken = default);
+
+    Task<string> GenerateOrderBusinessIdAsync(CancellationToken cancellationToken = default);
 }

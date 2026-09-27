@@ -37,6 +37,11 @@ export function AppLayout() {
               Projects
             </Button>
           ) : null}
+          {auth.hasPermission(PermissionCodes.ordersView) ? (
+            <Button color="inherit" component={Link} to="/orders">
+              Orders
+            </Button>
+          ) : null}
           {auth.hasPermission(PermissionCodes.usersView) ? (
             <Button color="inherit" component={Link} to="/users">
               Users
@@ -50,6 +55,11 @@ export function AppLayout() {
           {auth.hasPermission(PermissionCodes.employeesView) ? (
             <Button color="inherit" component={Link} to="/admin/employees">
               Employees
+            </Button>
+          ) : null}
+          {auth.hasPermission(PermissionCodes.ordersManageTypes) ? (
+            <Button color="inherit" component={Link} to="/admin/order-types">
+              Order Types
             </Button>
           ) : null}
           <Box sx={{ flexGrow: 1 }} />

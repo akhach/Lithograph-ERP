@@ -2,11 +2,13 @@ using LithographERP.Application.Modules.Authentication;
 using LithographERP.Application.Modules.Clients;
 using LithographERP.Application.Modules.Employees;
 using LithographERP.Application.Modules.Numbering;
+using LithographERP.Application.Modules.Orders;
 using LithographERP.Application.Modules.Projects;
 using LithographERP.Infrastructure.Modules.Authentication;
 using LithographERP.Infrastructure.Modules.Clients;
 using LithographERP.Infrastructure.Modules.Employees;
 using LithographERP.Infrastructure.Modules.Numbering;
+using LithographERP.Infrastructure.Modules.Orders;
 using LithographERP.Infrastructure.Modules.Projects;
 using LithographERP.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -37,6 +39,8 @@ public static class DependencyInjection
         services.AddScoped<IBusinessIdGenerator, BusinessIdGenerator>();
         services.AddScoped<IClientAdminService, ClientAdminService>();
         services.AddScoped<IProjectAdminService, ProjectAdminService>();
+        services.AddScoped<IOrderTypeAdminService, OrderTypeAdminService>();
+        services.AddScoped<IOrderAdminService, OrderAdminService>();
 
         return services;
     }

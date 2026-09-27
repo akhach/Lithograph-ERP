@@ -165,6 +165,20 @@ export function ProjectDetailPage() {
           Copy
         </Button>
         <Chip label={projectStatusLabels[project.status]} />
+        {auth.hasPermission(PermissionCodes.ordersView) &&
+        auth.hasPermission(PermissionCodes.ordersCreate) &&
+        (project.status === 'draft' ||
+          project.status === 'active' ||
+          project.status === 'on_hold') ? (
+          <Button
+            component={Link}
+            to={`/orders?projectId=${project.id}`}
+            size="small"
+            variant="outlined"
+          >
+            Create order
+          </Button>
+        ) : null}
       </Stack>
       <Typography variant="h6">{project.name}</Typography>
       <Typography>

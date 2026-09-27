@@ -44,6 +44,23 @@ public sealed class LithographApiFactory : WebApplicationFactory<Program>, IAsyn
             var db = scope.ServiceProvider.GetRequiredService<LithographDbContext>();
             await db.Database.ExecuteSqlRawAsync(
                 """
+                DELETE FROM orders.checklist_items;
+                DELETE FROM orders.folder_links;
+                UPDATE orders.orders SET created_by = NULL, updated_by = NULL;
+                DELETE FROM orders.orders;
+                UPDATE orders.order_types SET created_by = NULL, updated_by = NULL;
+                DELETE FROM orders.order_types;
+                DO $$
+                DECLARE sequence_name text;
+                BEGIN
+                  FOR sequence_name IN
+                    SELECT schemaname || '.' || sequencename
+                    FROM pg_sequences
+                    WHERE schemaname = 'orders' AND sequencename LIKE 'order_business_id_%'
+                  LOOP
+                    EXECUTE format('SELECT setval(%L, 1, false)', sequence_name);
+                  END LOOP;
+                END $$;
                 UPDATE projects.project_members SET assigned_by = NULL;
                 DELETE FROM projects.project_members;
                 UPDATE projects.projects SET created_by = NULL, updated_by = NULL;

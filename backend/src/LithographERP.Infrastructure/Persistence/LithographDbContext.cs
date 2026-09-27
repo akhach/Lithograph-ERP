@@ -1,6 +1,7 @@
 using LithographERP.Domain.Modules.Authentication;
 using LithographERP.Domain.Modules.Clients;
 using LithographERP.Domain.Modules.Employees;
+using LithographERP.Domain.Modules.Orders;
 using LithographERP.Domain.Modules.Projects;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,6 +28,14 @@ public sealed class LithographDbContext(DbContextOptions<LithographDbContext> op
     public DbSet<Project> Projects => Set<Project>();
 
     public DbSet<ProjectMember> ProjectMembers => Set<ProjectMember>();
+
+    public DbSet<OrderType> OrderTypes => Set<OrderType>();
+
+    public DbSet<Order> Orders => Set<Order>();
+
+    public DbSet<ChecklistItem> ChecklistItems => Set<ChecklistItem>();
+
+    public DbSet<FolderLink> FolderLinks => Set<FolderLink>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

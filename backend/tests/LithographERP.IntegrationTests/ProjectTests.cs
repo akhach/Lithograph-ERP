@@ -85,12 +85,6 @@ public class ProjectTests(LithographApiFactory factory)
         var stored = await db.Projects.SingleAsync(project => project.Id == created.Id);
         Assert.NotNull(stored.CreatedBy);
         Assert.Equal(stored.CreatedBy, stored.UpdatedBy);
-        Assert.False(await db.Database.SqlQueryRaw<string>(
-            """
-            SELECT nspname AS "Value"
-            FROM pg_namespace
-            WHERE nspname = 'orders'
-            """).AnyAsync());
     }
 
     [Fact]

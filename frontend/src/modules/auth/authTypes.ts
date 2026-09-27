@@ -65,4 +65,13 @@ export const PermissionCodes = {
   projectsEdit: 'projects.edit',
   projectsManageTeam: 'projects.manage_team',
   projectsChangeStatus: 'projects.change_status',
+  ordersView: 'orders.view',
+  ordersCreate: 'orders.create',
+  ordersEdit: 'orders.edit',
+  ordersChangeStatus: 'orders.change_status',
+  ordersManageChecklist: 'orders.manage_checklist',
+  ordersManageFolderLinks: 'orders.manage_folder_links',
+  ordersManageTypes: 'orders.manage_types',
+  ordersViewSellingPrice: 'orders.view_selling_price',
+  ordersViewCostPrice: 'orders.view_cost_price',
 } as const
