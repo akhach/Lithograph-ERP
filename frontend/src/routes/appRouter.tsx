@@ -16,6 +16,12 @@ import { CalculatorTemplatesPage } from '../modules/calculator/CalculatorTemplat
 import { OrderDetailPage } from '../modules/orders/OrderDetailPage.tsx'
 import { OrderTypesPage } from '../modules/orders/OrderTypesPage.tsx'
 import { OrdersPage } from '../modules/orders/OrdersPage.tsx'
+import { ClientsReportPage } from '../modules/reports/ClientsReportPage.tsx'
+import { CostsReportPage } from '../modules/reports/CostsReportPage.tsx'
+import { OrdersReportPage } from '../modules/reports/OrdersReportPage.tsx'
+import { OrderTypesReportPage } from '../modules/reports/OrderTypesReportPage.tsx'
+import { ProjectsReportPage } from '../modules/reports/ProjectsReportPage.tsx'
+import { ReportsPage } from '../modules/reports/ReportsPage.tsx'
 
 export const appRouter = createBrowserRouter([
   {
@@ -88,6 +94,54 @@ export const appRouter = createBrowserRouter([
             element: (
               <PermissionRoute permission={PermissionCodes.ordersView}>
                 <OrderDetailPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: 'reports',
+            element: (
+              <PermissionRoute permission={PermissionCodes.reportsView}>
+                <ReportsPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: 'reports/orders',
+            element: (
+              <PermissionRoute permission={PermissionCodes.reportsView}>
+                <OrdersReportPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: 'reports/projects',
+            element: (
+              <PermissionRoute permission={PermissionCodes.reportsView}>
+                <ProjectsReportPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: 'reports/clients',
+            element: (
+              <PermissionRoute permission={PermissionCodes.reportsView}>
+                <ClientsReportPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: 'reports/order-types',
+            element: (
+              <PermissionRoute permission={PermissionCodes.reportsView}>
+                <OrderTypesReportPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: 'reports/costs',
+            element: (
+              <PermissionRoute permission={PermissionCodes.reportsView}>
+                <CostsReportPage />
               </PermissionRoute>
             ),
           },

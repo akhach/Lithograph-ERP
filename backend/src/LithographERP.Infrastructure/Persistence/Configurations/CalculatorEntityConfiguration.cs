@@ -136,6 +136,7 @@ public sealed class CostItemConfiguration : IEntityTypeConfiguration<CostItem>
         entity.Property(item => item.UpdatedAt).HasColumnName("updated_at");
         entity.Property(item => item.UpdatedBy).HasColumnName("updated_by");
         entity.HasIndex(item => new { item.OrderId, item.SortOrder }).HasDatabaseName("cost_items_order_id_sort_order_idx");
+        entity.HasIndex(item => item.ExpenseDate).HasDatabaseName("cost_items_expense_date_idx");
         entity.HasOne<Order>().WithMany().HasForeignKey(item => item.OrderId)
             .OnDelete(DeleteBehavior.Restrict).HasConstraintName("cost_items_order_id_fkey");
         entity.HasOne<User>().WithMany().HasForeignKey(item => item.CreatedBy)
