@@ -1,4 +1,5 @@
 using LithographERP.Application.Modules.Authentication;
+using LithographERP.Application.Modules.Calculator;
 using Microsoft.AspNetCore.Diagnostics;
 
 namespace LithographERP.Api.Errors;
@@ -22,6 +23,26 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
             httpContext.Response.StatusCode = authException.StatusCode;
             await httpContext.Response.WriteAsJsonAsync(
                 new ApiErrorResponse(authException.Code, authException.Message, authException.Errors),
+                cancellationToken);
+            return true;
+        }
+
+        if (exception is CalculatorRequestException calculatorException)
+        {
+            logger.LogInformation(
+                "Request {Method} {Path} failed with {ErrorCode}. TraceIdentifier: {TraceIdentifier}",
+                httpContext.Request.Method,
+                httpContext.Request.Path,
+                calculatorException.Code,
+                httpContext.TraceIdentifier);
+
+            httpContext.Response.StatusCode = calculatorException.StatusCode;
+            await httpContext.Response.WriteAsJsonAsync(
+                new ApiErrorResponse(
+                    calculatorException.Code,
+                    calculatorException.Message,
+                    calculatorException.Errors,
+                    calculatorException.Validation),
                 cancellationToken);
             return true;
         }

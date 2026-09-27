@@ -1,4 +1,5 @@
 using LithographERP.Domain.Modules.Authentication;
+using LithographERP.Domain.Modules.Calculator;
 using LithographERP.Domain.Modules.Orders;
 using LithographERP.Domain.Modules.Projects;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +18,11 @@ public sealed class OrderTypeConfiguration : IEntityTypeConfiguration<OrderType>
         entity.Property(type => type.Id).HasColumnName("id");
         entity.Property(type => type.Name).HasColumnName("name").HasMaxLength(NameMaxLength).IsRequired();
         entity.Property(type => type.Description).HasColumnName("description");
+        entity.Property(type => type.CalculatorTemplateId).HasColumnName("calculator_template_id");
         entity.Property(type => type.IsActive).HasColumnName("is_active").HasDefaultValue(true).IsRequired();
+        entity.HasIndex(type => type.CalculatorTemplateId).HasDatabaseName("order_types_calculator_template_id_idx");
+        entity.HasOne<CalculatorTemplate>().WithMany().HasForeignKey(type => type.CalculatorTemplateId)
+            .OnDelete(DeleteBehavior.Restrict).HasConstraintName("order_types_calculator_template_id_fkey");
         entity.Property(type => type.CreatedAt).HasColumnName("created_at").IsRequired();
         entity.Property(type => type.CreatedBy).HasColumnName("created_by");
         entity.Property(type => type.UpdatedAt).HasColumnName("updated_at");

@@ -1,13 +1,22 @@
+export type ApiValidationIssue = {
+  code: string
+  message: string
+  elementId: string | null
+  fieldKey: string | null
+}
+
 export type ApiErrorBody = {
   code: string
   message: string
   errors: Record<string, string[]> | null
+  validation?: ApiValidationIssue[] | null
 }
 
 export class ApiError extends Error {
   readonly status: number
   readonly code: string
   readonly errors: Record<string, string[]> | null
+  readonly validation: ApiValidationIssue[] | null
 
   constructor(status: number, body: ApiErrorBody) {
     super(body.message)
@@ -15,6 +24,7 @@ export class ApiError extends Error {
     this.status = status
     this.code = body.code
     this.errors = body.errors
+    this.validation = body.validation ?? null
   }
 }
 
@@ -71,6 +81,7 @@ export async function apiRequest<T>(path: string, init: RequestInit = {}): Promi
             code: 'HTTP_ERROR',
             message: `Request failed with status ${response.status}.`,
             errors: null,
+            validation: null,
           },
     )
     if (

@@ -74,4 +74,7 @@ export const PermissionCodes = {
   ordersManageTypes: 'orders.manage_types',
   ordersViewSellingPrice: 'orders.view_selling_price',
   ordersViewCostPrice: 'orders.view_cost_price',
+  calculatorView: 'calculator.view',
+  calculatorManageTemplates: 'calculator.manage_templates',
+  calculatorPublishTemplates: 'calculator.publish_templates',
 } as const

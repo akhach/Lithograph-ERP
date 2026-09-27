@@ -10,38 +10,35 @@ import TableBody from '@mui/material/TableBody'
 import TableCell from '@mui/material/TableCell'
 import TableHead from '@mui/material/TableHead'
 import TableRow from '@mui/material/TableRow'
-import MenuItem from '@mui/material/MenuItem'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router'
 import { fieldMessage, messageOf } from '../auth/apiMessages.ts'
 import { useAuth } from '../auth/authContext.ts'
 import { PermissionCodes } from '../auth/authTypes.ts'
 import {
-  listActiveCalculatorTemplates,
-  type CalculatorTemplateOption,
-} from '../calculator/calculatorTemplatesApi.ts'
-import {
-  activateOrderType,
-  createOrderType,
-  deactivateOrderType,
-  listOrderTypes,
-  updateOrderType,
-  type OrderType,
-} from './orderTypesApi.ts'
+  activateCalculatorTemplate,
+  createCalculatorTemplate,
+  deactivateCalculatorTemplate,
+  listCalculatorTemplates,
+  updateCalculatorTemplate,
+  type CalculatorTemplateSummary,
+} from './calculatorTemplatesApi.ts'
 
-export function OrderTypesPage() {
+export function CalculatorTemplatesPage() {
   const auth = useAuth()
-  const canManage = auth.hasPermission(PermissionCodes.ordersManageTypes)
-  const [types, setTypes] = useState<OrderType[]>([])
+  const navigate = useNavigate()
+  const canManage = auth.hasPermission(PermissionCodes.calculatorManageTemplates)
+  const [templates, setTemplates] = useState<CalculatorTemplateSummary[]>([])
   const [error, setError] = useState<string | null>(null)
-  const [editing, setEditing] = useState<OrderType | null>(null)
   const [creating, setCreating] = useState(false)
-  const [deactivating, setDeactivating] = useState<OrderType | null>(null)
+  const [editing, setEditing] = useState<CalculatorTemplateSummary | null>(null)
+  const [deactivating, setDeactivating] = useState<CalculatorTemplateSummary | null>(null)
 
   async function load() {
     try {
-      setTypes(await listOrderTypes())
+      setTemplates(await listCalculatorTemplates())
       setError(null)
     } catch (caught: unknown) {
       setError(messageOf(caught))
@@ -52,9 +49,9 @@ export function OrderTypesPage() {
     let cancelled = false
     void (async () => {
       try {
-        const next = await listOrderTypes()
+        const next = await listCalculatorTemplates()
         if (!cancelled) {
-          setTypes(next)
+          setTemplates(next)
           setError(null)
         }
       } catch (caught: unknown) {
@@ -70,11 +67,11 @@ export function OrderTypesPage() {
     <Stack spacing={2}>
       <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h5" component="h2">
-          Order types
+          Calculator templates
         </Typography>
         {canManage ? (
           <Button variant="contained" onClick={() => setCreating(true)}>
-            Create order type
+            Create template
           </Button>
         ) : null}
       </Stack>
@@ -83,82 +80,89 @@ export function OrderTypesPage() {
         <TableHead>
           <TableRow>
             <TableCell>Name</TableCell>
-            <TableCell>Description</TableCell>
-            <TableCell>Calculator template</TableCell>
+            <TableCell>Latest published version</TableCell>
+            <TableCell>Draft version</TableCell>
             <TableCell>Status</TableCell>
             <TableCell />
           </TableRow>
         </TableHead>
         <TableBody>
-          {types.map((type) => (
-            <TableRow key={type.id}>
-              <TableCell>{type.name}</TableCell>
-              <TableCell>{type.description ?? ''}</TableCell>
-              <TableCell>{type.calculatorTemplateName ?? 'None'}</TableCell>
-              <TableCell>{type.isActive ? 'Active' : 'Inactive'}</TableCell>
+          {templates.map((template) => (
+            <TableRow key={template.id}>
+              <TableCell>{template.name}</TableCell>
               <TableCell>
-                {canManage ? (
-                  <Stack direction="row" spacing={1}>
-                    <Button size="small" onClick={() => setEditing(type)}>
+                {template.latestPublishedVersion ? `v${template.latestPublishedVersion}` : 'None'}
+              </TableCell>
+              <TableCell>{template.draftVersion ? `v${template.draftVersion}` : 'None'}</TableCell>
+              <TableCell>{template.isActive ? 'Active' : 'Inactive'}</TableCell>
+              <TableCell>
+                <Stack direction="row" spacing={1}>
+                  <Button
+                    size="small"
+                    onClick={() => navigate(`/admin/calculator-templates/${template.id}`)}
+                  >
+                    Open
+                  </Button>
+                  {canManage ? (
+                    <Button size="small" onClick={() => setEditing(template)}>
                       Edit
                     </Button>
-                    {type.isActive ? (
-                      <Button size="small" onClick={() => setDeactivating(type)}>
-                        Deactivate
-                      </Button>
-                    ) : (
-                      <Button
-                        size="small"
-                        onClick={() => {
-                          void activateOrderType(type.id).then(() => load())
-                        }}
-                      >
-                        Activate
-                      </Button>
-                    )}
-                  </Stack>
-                ) : null}
+                  ) : null}
+                  {canManage && template.isActive ? (
+                    <Button size="small" onClick={() => setDeactivating(template)}>
+                      Deactivate
+                    </Button>
+                  ) : null}
+                  {canManage && !template.isActive ? (
+                    <Button
+                      size="small"
+                      onClick={() => {
+                        void activateCalculatorTemplate(template.id).then(() => load())
+                      }}
+                    >
+                      Activate
+                    </Button>
+                  ) : null}
+                </Stack>
               </TableCell>
             </TableRow>
           ))}
-          {types.length === 0 ? (
+          {templates.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={5}>No order types yet.</TableCell>
+              <TableCell colSpan={5}>No calculator templates yet.</TableCell>
             </TableRow>
           ) : null}
         </TableBody>
       </Table>
       {creating ? (
-        <OrderTypeDialog
-          title="New order type"
+        <TemplateDialog
+          title="New calculator template"
           onClose={() => setCreating(false)}
-          onSave={async (name, description, calculatorTemplateId) => {
-            await createOrderType({ name, description, calculatorTemplateId })
-            setCreating(false)
-            await load()
+          onSave={async (name, description) => {
+            const created = await createCalculatorTemplate({ name, description })
+            navigate(`/admin/calculator-templates/${created.id}`)
           }}
         />
       ) : null}
       {editing ? (
-        <OrderTypeDialog
-          title="Edit order type"
+        <TemplateDialog
+          title="Edit calculator template"
           initialName={editing.name}
           initialDescription={editing.description ?? ''}
-          initialTemplateId={editing.calculatorTemplateId}
-          initialTemplateName={editing.calculatorTemplateName}
           onClose={() => setEditing(null)}
-          onSave={async (name, description, calculatorTemplateId) => {
-            await updateOrderType(editing.id, { name, description, calculatorTemplateId })
+          onSave={async (name, description) => {
+            await updateCalculatorTemplate(editing.id, { name, description })
             setEditing(null)
             await load()
           }}
         />
       ) : null}
       <Dialog open={deactivating !== null} onClose={() => setDeactivating(null)}>
-        <DialogTitle>Deactivate order type?</DialogTitle>
+        <DialogTitle>Deactivate calculator template?</DialogTitle>
         <DialogContent>
           <Typography>
-            It will no longer be available for new Orders. Existing Orders will remain unchanged.
+            It will no longer be available for new Order Type assignments. Existing assignments stay
+            in place.
           </Typography>
         </DialogContent>
         <DialogActions>
@@ -167,7 +171,7 @@ export function OrderTypesPage() {
             variant="contained"
             onClick={() => {
               if (!deactivating) return
-              void deactivateOrderType(deactivating.id)
+              void deactivateCalculatorTemplate(deactivating.id)
                 .then(() => {
                   setDeactivating(null)
                   return load()
@@ -183,73 +187,31 @@ export function OrderTypesPage() {
   )
 }
 
-function OrderTypeDialog({
+function TemplateDialog({
   title,
   initialName = '',
   initialDescription = '',
-  initialTemplateId = null,
-  initialTemplateName = null,
   onClose,
   onSave,
 }: {
   title: string
   initialName?: string
   initialDescription?: string
-  initialTemplateId?: string | null
-  initialTemplateName?: string | null
   onClose: () => void
-  onSave: (name: string, description: string, calculatorTemplateId: string | null) => Promise<void>
+  onSave: (name: string, description: string) => Promise<void>
 }) {
   const [name, setName] = useState(initialName)
   const [description, setDescription] = useState(initialDescription)
-  const [templateId, setTemplateId] = useState(initialTemplateId ?? '')
-  const [templates, setTemplates] = useState<CalculatorTemplateOption[]>([])
   const [error, setError] = useState<string | null>(null)
   const [nameError, setNameError] = useState<string | undefined>()
   const [saving, setSaving] = useState(false)
-
-  useEffect(() => {
-    let cancelled = false
-    void (async () => {
-      try {
-        const active = await listActiveCalculatorTemplates()
-        if (cancelled) return
-        if (
-          initialTemplateId &&
-          initialTemplateName &&
-          !active.some((template) => template.id === initialTemplateId)
-        ) {
-          setTemplates([
-            { id: initialTemplateId, name: `${initialTemplateName} (inactive)` },
-            ...active,
-          ])
-        } else {
-          setTemplates(active)
-        }
-      } catch (caught: unknown) {
-        if (cancelled) return
-        setError(messageOf(caught))
-        if (initialTemplateId) {
-          setTemplates([
-            {
-              id: initialTemplateId,
-              name: initialTemplateName ? `${initialTemplateName} (inactive)` : 'Current template',
-            },
-          ])
-        }
-      }
-    })()
-    return () => {
-      cancelled = true
-    }
-  }, [initialTemplateId, initialTemplateName])
 
   async function submit() {
     setSaving(true)
     setError(null)
     setNameError(undefined)
     try {
-      await onSave(name, description, templateId || null)
+      await onSave(name, description)
     } catch (caught: unknown) {
       setError(messageOf(caught))
       setNameError(fieldMessage(caught, 'name'))
@@ -278,19 +240,6 @@ function OrderTypeDialog({
             value={description}
             onChange={(event) => setDescription(event.target.value)}
           />
-          <TextField
-            select
-            label="Calculator template"
-            value={templateId}
-            onChange={(event) => setTemplateId(event.target.value)}
-          >
-            <MenuItem value="">None</MenuItem>
-            {templates.map((template) => (
-              <MenuItem key={template.id} value={template.id}>
-                {template.name}
-              </MenuItem>
-            ))}
-          </TextField>
         </Stack>
       </DialogContent>
       <DialogActions>

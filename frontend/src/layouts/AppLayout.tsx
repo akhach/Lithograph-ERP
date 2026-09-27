@@ -62,6 +62,13 @@ export function AppLayout() {
               Order Types
             </Button>
           ) : null}
+          {auth.hasPermission(PermissionCodes.calculatorView) ||
+          auth.hasPermission(PermissionCodes.calculatorManageTemplates) ||
+          auth.hasPermission(PermissionCodes.calculatorPublishTemplates) ? (
+            <Button color="inherit" component={Link} to="/admin/calculator-templates">
+              Calculator Templates
+            </Button>
+          ) : null}
           <Box sx={{ flexGrow: 1 }} />
           <Button color="inherit" onClick={(event) => setMenuAnchor(event.currentTarget)}>
             {auth.user?.username}

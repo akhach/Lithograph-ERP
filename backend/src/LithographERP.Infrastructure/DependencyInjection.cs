@@ -1,10 +1,12 @@
 using LithographERP.Application.Modules.Authentication;
+using LithographERP.Application.Modules.Calculator;
 using LithographERP.Application.Modules.Clients;
 using LithographERP.Application.Modules.Employees;
 using LithographERP.Application.Modules.Numbering;
 using LithographERP.Application.Modules.Orders;
 using LithographERP.Application.Modules.Projects;
 using LithographERP.Infrastructure.Modules.Authentication;
+using LithographERP.Infrastructure.Modules.Calculator;
 using LithographERP.Infrastructure.Modules.Clients;
 using LithographERP.Infrastructure.Modules.Employees;
 using LithographERP.Infrastructure.Modules.Numbering;
@@ -41,6 +43,9 @@ public static class DependencyInjection
         services.AddScoped<IProjectAdminService, ProjectAdminService>();
         services.AddScoped<IOrderTypeAdminService, OrderTypeAdminService>();
         services.AddScoped<IOrderAdminService, OrderAdminService>();
+        services.AddScoped<CalculatorTemplateAdminService>();
+        services.AddScoped<ICalculatorTemplateAdminService>(provider => provider.GetRequiredService<CalculatorTemplateAdminService>());
+        services.AddScoped<ICalculatorTemplateLookup>(provider => provider.GetRequiredService<CalculatorTemplateAdminService>());
 
         return services;
     }

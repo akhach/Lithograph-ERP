@@ -109,9 +109,11 @@ public sealed record OrderTypeResponse(
     string? Description,
     bool IsActive,
     DateTimeOffset CreatedAt,
-    DateTimeOffset? UpdatedAt);
+    DateTimeOffset? UpdatedAt,
+    Guid? CalculatorTemplateId,
+    string? CalculatorTemplateName);
 
-public sealed record SaveOrderTypeRequest(string Name, string? Description);
+public sealed record SaveOrderTypeRequest(string Name, string? Description, Guid? CalculatorTemplateId);
 
 public sealed record SaveChecklistItemRequest(string Text, int? SortOrder);
 

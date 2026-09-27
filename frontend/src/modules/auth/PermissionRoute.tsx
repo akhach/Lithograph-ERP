@@ -8,13 +8,18 @@ import { UsersPage } from './UsersPage.tsx'
 
 export function PermissionRoute({
   permission,
+  anyOf,
   children,
 }: {
-  permission: string
+  permission?: string
+  anyOf?: readonly string[]
   children?: ReactNode
 }) {
   const auth = useAuth()
-  if (!auth.hasPermission(permission)) {
+  const allowed = anyOf
+    ? anyOf.some((code) => auth.hasPermission(code))
+    : Boolean(permission && auth.hasPermission(permission))
+  if (!allowed) {
     return <Alert severity="warning">You do not have access to this page.</Alert>
   }
   if (children) {

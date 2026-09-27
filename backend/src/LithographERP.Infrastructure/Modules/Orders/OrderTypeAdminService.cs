@@ -1,4 +1,5 @@
 using LithographERP.Application.Modules.Authentication;
+using LithographERP.Application.Modules.Calculator;
 using LithographERP.Application.Modules.Orders;
 using LithographERP.Domain.Modules.Orders;
 using LithographERP.Infrastructure.Persistence;
@@ -8,7 +9,7 @@ using Npgsql;
 
 namespace LithographERP.Infrastructure.Modules.Orders;
 
-public sealed class OrderTypeAdminService(LithographDbContext db, TimeProvider time) : IOrderTypeAdminService
+public sealed class OrderTypeAdminService(LithographDbContext db, TimeProvider time, ICalculatorTemplateLookup templates) : IOrderTypeAdminService
 {
     public async Task<IReadOnlyList<OrderTypeResponse>> ListAsync(bool activeOnly, CancellationToken cancellationToken = default)
     {
@@ -19,7 +20,7 @@ public sealed class OrderTypeAdminService(LithographDbContext db, TimeProvider t
         }
 
         var types = await query.OrderBy(type => type.Name).ThenBy(type => type.Id).ToListAsync(cancellationToken);
-        return types.Select(ToResponse).ToArray();
+        return await MapAsync(types, cancellationToken);
     }
 
     public async Task<OrderTypeResponse> GetAsync(Guid orderTypeId, CancellationToken cancellationToken = default)
@@ -30,7 +31,7 @@ public sealed class OrderTypeAdminService(LithographDbContext db, TimeProvider t
             throw NotFound();
         }
 
-        return ToResponse(type);
+        return await MapAsync(type, cancellationToken);
     }
 
     public async Task<OrderTypeResponse> CreateAsync(Guid actorId, SaveOrderTypeRequest request, CancellationToken cancellationToken = default)
@@ -42,13 +43,14 @@ public sealed class OrderTypeAdminService(LithographDbContext db, TimeProvider t
             Id = Guid.NewGuid(),
             Name = name,
             Description = Text(request.Description),
+            CalculatorTemplateId = await ResolveTemplateAsync(request.CalculatorTemplateId, current: null, cancellationToken),
             IsActive = true,
             CreatedAt = time.GetUtcNow(),
             CreatedBy = actorId,
         };
         db.OrderTypes.Add(type);
         await SaveAsync(cancellationToken);
-        return ToResponse(type);
+        return await MapAsync(type, cancellationToken);
     }
 
     public async Task<OrderTypeResponse> UpdateAsync(
@@ -62,9 +64,10 @@ public sealed class OrderTypeAdminService(LithographDbContext db, TimeProvider t
         await EnsureNameAvailableAsync(name, type.Id, cancellationToken);
         type.Name = name;
         type.Description = Text(request.Description);
+        type.CalculatorTemplateId = await ResolveTemplateAsync(request.CalculatorTemplateId, type.CalculatorTemplateId, cancellationToken);
         Touch(type, actorId);
         await SaveAsync(cancellationToken);
-        return ToResponse(type);
+        return await MapAsync(type, cancellationToken);
     }
 
     public async Task<OrderTypeResponse> SetActiveAsync(
@@ -81,7 +84,62 @@ public sealed class OrderTypeAdminService(LithographDbContext db, TimeProvider t
             await SaveAsync(cancellationToken);
         }
 
-        return ToResponse(type);
+        return await MapAsync(type, cancellationToken);
+    }
+
+    private async Task<Guid?> ResolveTemplateAsync(Guid? requested, Guid? current, CancellationToken cancellationToken)
+    {
+        if (requested is null)
+        {
+            return null;
+        }
+
+        var template = await templates.FindAsync(requested.Value, cancellationToken);
+        if (template is null)
+        {
+            throw new AuthException(CalculatorErrorCodes.TemplateNotFound, "The Calculator Template could not be found.", 404);
+        }
+
+        if (requested != current && !template.IsActive)
+        {
+            throw new AuthException(
+                CalculatorErrorCodes.TemplateInactive,
+                "The selected Calculator Template is inactive.",
+                400);
+        }
+
+        return requested;
+    }
+
+    private async Task<OrderTypeResponse> MapAsync(OrderType type, CancellationToken cancellationToken)
+    {
+        CalculatorTemplateReference? template = null;
+        if (type.CalculatorTemplateId is Guid templateId)
+        {
+            template = await templates.FindAsync(templateId, cancellationToken);
+        }
+
+        return ToResponse(type, template);
+    }
+
+    private async Task<IReadOnlyList<OrderTypeResponse>> MapAsync(IReadOnlyList<OrderType> types, CancellationToken cancellationToken)
+    {
+        var ids = types
+            .Where(type => type.CalculatorTemplateId is not null)
+            .Select(type => type.CalculatorTemplateId!.Value)
+            .Distinct()
+            .ToArray();
+        var templatesById = await templates.FindManyAsync(ids, cancellationToken);
+        return types.Select(type =>
+        {
+            CalculatorTemplateReference? template = null;
+            if (type.CalculatorTemplateId is Guid templateId)
+            {
+                templatesById.TryGetValue(templateId, out template);
+            }
+
+            return ToResponse(type, template);
+        }).ToArray();
     }
 
     private async Task<OrderType> LoadAsync(Guid orderTypeId, CancellationToken cancellationToken)
@@ -148,8 +206,16 @@ public sealed class OrderTypeAdminService(LithographDbContext db, TimeProvider t
 
     private static string? Text(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
-    private static OrderTypeResponse ToResponse(OrderType type) =>
-        new(type.Id, type.Name, type.Description, type.IsActive, type.CreatedAt, type.UpdatedAt);
+    private static OrderTypeResponse ToResponse(OrderType type, CalculatorTemplateReference? template) =>
+        new(
+            type.Id,
+            type.Name,
+            type.Description,
+            type.IsActive,
+            type.CreatedAt,
+            type.UpdatedAt,
+            type.CalculatorTemplateId,
+            template?.Name);
 
     private static AuthException NotFound() =>
         new(OrderErrorCodes.OrderTypeNotFound, "The Order Type could not be found.", 404);

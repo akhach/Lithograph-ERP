@@ -11,6 +11,8 @@ import { ClientDetailPage } from '../modules/clients/ClientDetailPage.tsx'
 import { ClientsPage } from '../modules/clients/ClientsPage.tsx'
 import { ProjectDetailPage } from '../modules/projects/ProjectDetailPage.tsx'
 import { ProjectsPage } from '../modules/projects/ProjectsPage.tsx'
+import { CalculatorTemplateDetailPage } from '../modules/calculator/CalculatorTemplateDetailPage.tsx'
+import { CalculatorTemplatesPage } from '../modules/calculator/CalculatorTemplatesPage.tsx'
 import { OrderDetailPage } from '../modules/orders/OrderDetailPage.tsx'
 import { OrderTypesPage } from '../modules/orders/OrderTypesPage.tsx'
 import { OrdersPage } from '../modules/orders/OrdersPage.tsx'
@@ -94,6 +96,34 @@ export const appRouter = createBrowserRouter([
             element: (
               <PermissionRoute permission={PermissionCodes.ordersManageTypes}>
                 <OrderTypesPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: 'admin/calculator-templates',
+            element: (
+              <PermissionRoute
+                anyOf={[
+                  PermissionCodes.calculatorView,
+                  PermissionCodes.calculatorManageTemplates,
+                  PermissionCodes.calculatorPublishTemplates,
+                ]}
+              >
+                <CalculatorTemplatesPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: 'admin/calculator-templates/:templateId',
+            element: (
+              <PermissionRoute
+                anyOf={[
+                  PermissionCodes.calculatorView,
+                  PermissionCodes.calculatorManageTemplates,
+                  PermissionCodes.calculatorPublishTemplates,
+                ]}
+              >
+                <CalculatorTemplateDetailPage />
               </PermissionRoute>
             ),
           },

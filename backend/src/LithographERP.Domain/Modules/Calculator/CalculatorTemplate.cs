@@ -1,14 +1,12 @@
-namespace LithographERP.Domain.Modules.Orders;
+namespace LithographERP.Domain.Modules.Calculator;
 
-public sealed class OrderType
+public sealed class CalculatorTemplate
 {
     public Guid Id { get; set; }
 
     public string Name { get; set; } = string.Empty;
 
     public string? Description { get; set; }
-
-    public Guid? CalculatorTemplateId { get; set; }
 
     public bool IsActive { get; set; } = true;
 

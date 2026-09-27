@@ -43,7 +43,10 @@ public sealed class OrderTypesController(IOrderTypeAdminService orderTypes, IAut
     [Authorize(Policy = PermissionCatalog.Orders.ManageTypes)]
     public async Task<ActionResult<OrderTypeResponse>> Create([FromBody] SaveOrderTypeBody request, CancellationToken cancellationToken)
     {
-        var created = await orderTypes.CreateAsync(CurrentUserId.Require(User), new SaveOrderTypeRequest(request.Name, request.Description), cancellationToken);
+        var created = await orderTypes.CreateAsync(
+            CurrentUserId.Require(User),
+            new SaveOrderTypeRequest(request.Name, request.Description, request.CalculatorTemplateId),
+            cancellationToken);
         return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
     }
 
@@ -53,7 +56,7 @@ public sealed class OrderTypesController(IOrderTypeAdminService orderTypes, IAut
         await orderTypes.UpdateAsync(
             CurrentUserId.Require(User),
             id,
-            new SaveOrderTypeRequest(request.Name, request.Description),
+            new SaveOrderTypeRequest(request.Name, request.Description, request.CalculatorTemplateId),
             cancellationToken);
 
     [HttpPost("{id:guid}/activate")]
@@ -78,4 +81,4 @@ public sealed class OrderTypesController(IOrderTypeAdminService orderTypes, IAut
     }
 }
 
-public sealed record SaveOrderTypeBody(string Name, string? Description);
+public sealed record SaveOrderTypeBody(string Name, string? Description, Guid? CalculatorTemplateId);

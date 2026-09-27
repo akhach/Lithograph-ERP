@@ -1,7 +1,7 @@
 # Lithograph ERP V1 Implementation Status
 
 ## Current Phase
-31 — Orders (complete)
+32 — Calculator Foundation (complete)
 
 ## Phases
 
@@ -11,7 +11,7 @@
 - [x] 29 Clients
 - [x] 30 Projects
 - [x] 31 Orders
-- [ ] 32 Calculator Foundation
+- [x] 32 Calculator Foundation
 - [ ] 33 Order Calculator
 - [ ] 34 Costs
 - [ ] 35 Reports

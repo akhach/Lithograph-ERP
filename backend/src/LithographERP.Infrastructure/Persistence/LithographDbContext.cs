@@ -1,4 +1,5 @@
 using LithographERP.Domain.Modules.Authentication;
+using LithographERP.Domain.Modules.Calculator;
 using LithographERP.Domain.Modules.Clients;
 using LithographERP.Domain.Modules.Employees;
 using LithographERP.Domain.Modules.Orders;
@@ -36,6 +37,10 @@ public sealed class LithographDbContext(DbContextOptions<LithographDbContext> op
     public DbSet<ChecklistItem> ChecklistItems => Set<ChecklistItem>();
 
     public DbSet<FolderLink> FolderLinks => Set<FolderLink>();
+
+    public DbSet<CalculatorTemplate> CalculatorTemplates => Set<CalculatorTemplate>();
+
+    public DbSet<CalculatorTemplateVersion> CalculatorTemplateVersions => Set<CalculatorTemplateVersion>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
