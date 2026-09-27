@@ -2,14 +2,17 @@ using LithographERP.Application.Modules.Authentication;
 using LithographERP.Application.Modules.Clients;
 using LithographERP.Application.Modules.Employees;
 using LithographERP.Application.Modules.Numbering;
+using LithographERP.Application.Modules.Projects;
 using LithographERP.Infrastructure.Modules.Authentication;
 using LithographERP.Infrastructure.Modules.Clients;
 using LithographERP.Infrastructure.Modules.Employees;
 using LithographERP.Infrastructure.Modules.Numbering;
+using LithographERP.Infrastructure.Modules.Projects;
 using LithographERP.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace LithographERP.Infrastructure;
 
@@ -22,6 +25,7 @@ public static class DependencyInjection
     {
         services.AddDbContext<LithographDbContext>(options => options.UseNpgsql(connectionString));
         services.AddSingleton(ReadAuthSettings(configuration));
+        services.TryAddSingleton(TimeProvider.System);
         services.AddSingleton<PasswordHashing>();
         services.AddScoped<IAuthenticationBootstrap, AuthenticationBootstrap>();
         services.AddScoped<AuthService>();
@@ -32,6 +36,7 @@ public static class DependencyInjection
         services.AddScoped<IEmployeeAdminService, EmployeeAdminService>();
         services.AddScoped<IBusinessIdGenerator, BusinessIdGenerator>();
         services.AddScoped<IClientAdminService, ClientAdminService>();
+        services.AddScoped<IProjectAdminService, ProjectAdminService>();
 
         return services;
     }

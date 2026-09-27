@@ -60,4 +60,9 @@ export const PermissionCodes = {
   clientsCreate: 'clients.create',
   clientsEdit: 'clients.edit',
   clientsActivate: 'clients.activate',
+  projectsView: 'projects.view',
+  projectsCreate: 'projects.create',
+  projectsEdit: 'projects.edit',
+  projectsManageTeam: 'projects.manage_team',
+  projectsChangeStatus: 'projects.change_status',
 } as const

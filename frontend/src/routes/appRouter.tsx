@@ -9,6 +9,8 @@ import { PermissionCodes } from '../modules/auth/authTypes.ts'
 import { SessionStatus } from '../modules/auth/SessionStatus.tsx'
 import { ClientDetailPage } from '../modules/clients/ClientDetailPage.tsx'
 import { ClientsPage } from '../modules/clients/ClientsPage.tsx'
+import { ProjectDetailPage } from '../modules/projects/ProjectDetailPage.tsx'
+import { ProjectsPage } from '../modules/projects/ProjectsPage.tsx'
 
 export const appRouter = createBrowserRouter([
   {
@@ -49,6 +51,22 @@ export const appRouter = createBrowserRouter([
             element: (
               <PermissionRoute permission={PermissionCodes.clientsView}>
                 <ClientDetailPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: 'projects',
+            element: (
+              <PermissionRoute permission={PermissionCodes.projectsView}>
+                <ProjectsPage />
+              </PermissionRoute>
+            ),
+          },
+          {
+            path: 'projects/:projectId',
+            element: (
+              <PermissionRoute permission={PermissionCodes.projectsView}>
+                <ProjectDetailPage />
               </PermissionRoute>
             ),
           },

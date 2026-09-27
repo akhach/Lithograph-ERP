@@ -62,12 +62,6 @@ public class ClientTests(LithographApiFactory factory)
         Assert.NotNull(stored.CreatedBy);
         Assert.Equal("CL-000001", stored.BusinessId);
         Assert.Null(stored.UpdatedAt);
-        Assert.False(await db.Database.SqlQueryRaw<string>(
-            """
-            SELECT nspname AS "Value"
-            FROM pg_namespace
-            WHERE nspname = 'projects'
-            """).AnyAsync());
     }
 
     [Fact]

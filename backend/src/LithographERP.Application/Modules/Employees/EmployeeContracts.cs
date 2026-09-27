@@ -6,6 +6,7 @@ public static class EmployeeErrorCodes
     public const string UserAlreadyLinked = "USER_ALREADY_LINKED_TO_EMPLOYEE";
     public const string EmployeeAlreadyLinked = "EMPLOYEE_ALREADY_LINKED_TO_USER";
     public const string UserLinkNotFound = "EMPLOYEE_USER_LINK_NOT_FOUND";
+    public const string EmployeeInactive = "EMPLOYEE_INACTIVE";
 }
 
 public sealed record LinkedUserSummary(Guid Id, string Username, bool IsActive);
