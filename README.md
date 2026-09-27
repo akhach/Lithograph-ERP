@@ -592,6 +592,15 @@ Microservices
 
 These may be introduced in future versions only when a real business requirement exists.
 
+Known V1 limitations, so they are not treated as defects:
+
+- One currency. Amounts are operational decimals, not accounting entries.
+- Profit is calculated from Selling Price and Cost Price. It is not stored, and reports do not claim accounting net profit.
+- Deleting a Cost Item removes that row. V1 does not keep a full cost-change history.
+- Order status changes are current state only. V1 does not keep a status history.
+- Folder Links store a path. The ERP does not open Explorer, create folders, or back up those external files.
+- A database backup does not include files outside PostgreSQL.
+
 ---
 
 # 21. Development Objective
