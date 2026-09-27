@@ -46,6 +46,7 @@ import {
   type ProjectOption,
 } from '../projects/projectsApi.ts'
 import { OrderCalculatorSection } from './OrderCalculatorSection.tsx'
+import { OrderCostsSection } from './OrderCostsSection.tsx'
 import { changeOrderType, getOrderCalculator } from './orderCalculatorApi.ts'
 
 export function OrderDetailPage() {
@@ -59,6 +60,8 @@ export function OrderDetailPage() {
   const canSeeCost = auth.hasPermission(PermissionCodes.ordersViewCostPrice)
   const canUseCalculator = auth.hasPermission(PermissionCodes.calculatorView)
   const canEditCalculator = auth.hasPermission(PermissionCodes.calculatorEdit)
+  const canViewCosts = auth.hasPermission(PermissionCodes.calculatorViewCosts)
+  const canEditCosts = auth.hasPermission(PermissionCodes.calculatorEditCosts)
   const [order, setOrder] = useState<OrderDetail | null>(null)
   const [projects, setProjects] = useState<ProjectOption[]>([])
   const [orderTypes, setOrderTypes] = useState<OrderType[]>([])
@@ -98,6 +101,13 @@ export function OrderDetailPage() {
       cancelled = true
     }
   }, [orderId, canEdit])
+
+  async function reloadOrder() {
+    const loaded = await getOrder(orderId)
+    setOrder(loaded)
+    setSavedOrderType(loaded.orderType)
+    setStatus(loaded.status)
+  }
 
   async function save() {
     if (!order) return
@@ -443,14 +453,23 @@ export function OrderDetailPage() {
             orderId={order.id}
             canEdit={canEditCalculator}
             reloadKey={calculatorKey}
-            onOrderChanged={async () => {
-              const loaded = await getOrder(order.id)
-              setOrder(loaded)
-              setSavedOrderType(loaded.orderType)
-              setStatus(loaded.status)
-            }}
+            onOrderChanged={reloadOrder}
           />
         </>
+      ) : null}
+      {canViewCosts || canEditCosts ? (
+        <OrderCostsSection
+          key={order.id}
+          orderId={order.id}
+          canView={canViewCosts}
+          canEdit={canEditCosts && order.status !== 'cancelled'}
+          readOnlyNote={
+            canEditCosts && order.status === 'cancelled'
+              ? 'Costs cannot be changed in the current Order state.'
+              : null
+          }
+          onOrderChanged={reloadOrder}
+        />
       ) : null}
 
       <ChecklistSection

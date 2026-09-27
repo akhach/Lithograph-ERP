@@ -97,6 +97,7 @@ public sealed class OrderCalculatorService(
         calculator.UpdatedAt = now;
         calculator.UpdatedBy = actorId;
         order.SellingPrice = 0m;
+        // Cost Items and cost_price stay on the Order.
         Touch(order, actorId, now);
         await CommitAsync(cancellationToken);
         return await ToRuntimeAsync(order, calculator, access, cancellationToken);
@@ -150,6 +151,7 @@ public sealed class OrderCalculatorService(
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
         order.OrderTypeId = target.Id;
         order.SellingPrice = 0m;
+        // Cost Items and cost_price stay on the Order.
         Touch(order, actorId, now);
         if (calculator is not null && versionId is null)
         {

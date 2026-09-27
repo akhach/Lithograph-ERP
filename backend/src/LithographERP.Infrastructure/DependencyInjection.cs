@@ -47,6 +47,7 @@ public static class DependencyInjection
         services.AddScoped<ICalculatorTemplateAdminService>(provider => provider.GetRequiredService<CalculatorTemplateAdminService>());
         services.AddScoped<ICalculatorTemplateLookup>(provider => provider.GetRequiredService<CalculatorTemplateAdminService>());
         services.AddScoped<IOrderCalculatorService, OrderCalculatorService>();
+        services.AddScoped<IOrderCostService, OrderCostService>();
 
         return services;
     }

@@ -262,12 +262,12 @@ public class CalculatorTemplateTests(LithographApiFactory factory)
             FROM information_schema.tables
             WHERE table_schema = 'calculator' AND table_name = 'order_calculators'
             """).SingleAsync());
-        Assert.False(await db.Database.SqlQueryRaw<string>(
+        Assert.Equal("cost_items", await db.Database.SqlQueryRaw<string>(
             """
             SELECT table_name AS "Value"
             FROM information_schema.tables
             WHERE table_schema = 'calculator' AND table_name = 'cost_items'
-            """).AnyAsync());
+            """).SingleAsync());
         var nullable = await db.Database.SqlQueryRaw<string>(
             """
             SELECT is_nullable AS "Value"

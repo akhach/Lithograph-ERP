@@ -44,6 +44,8 @@ public sealed class LithographDbContext(DbContextOptions<LithographDbContext> op
 
     public DbSet<OrderCalculator> OrderCalculators => Set<OrderCalculator>();
 
+    public DbSet<CostItem> CostItems => Set<CostItem>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasSequence<long>("client_business_id_seq", "clients").StartsAt(1).IncrementsBy(1);

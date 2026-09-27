@@ -78,4 +78,6 @@ export const PermissionCodes = {
   calculatorEdit: 'calculator.edit',
   calculatorManageTemplates: 'calculator.manage_templates',
   calculatorPublishTemplates: 'calculator.publish_templates',
+  calculatorViewCosts: 'calculator.view_costs',
+  calculatorEditCosts: 'calculator.edit_costs',
 } as const

@@ -1,7 +1,7 @@
 # Lithograph ERP V1 Implementation Status
 
 ## Current Phase
-34 — Costs (not started)
+35 — Reports (not started)
 
 ## Phases
 
@@ -13,7 +13,7 @@
 - [x] 31 Orders
 - [x] 32 Calculator Foundation
 - [x] 33 Order Calculator
-- [ ] 34 Costs
+- [x] 34 Costs
 - [ ] 35 Reports
 - [ ] 36 Dashboard
 - [ ] 37 Integration / Release

@@ -110,3 +110,37 @@ public sealed class OrderCalculatorConfiguration : IEntityTypeConfiguration<Orde
             .OnDelete(DeleteBehavior.Restrict).HasConstraintName("order_calculators_updated_by_fkey");
     }
 }
+
+public sealed class CostItemConfiguration : IEntityTypeConfiguration<CostItem>
+{
+    public const int CategoryMaxLength = 150;
+    public const int SupplierMaxLength = 200;
+
+    public void Configure(EntityTypeBuilder<CostItem> entity)
+    {
+        entity.ToTable("cost_items", "calculator", table =>
+        {
+            table.HasCheckConstraint("cost_items_amount_ck", "amount >= 0");
+        });
+        entity.HasKey(item => item.Id);
+        entity.Property(item => item.Id).HasColumnName("id");
+        entity.Property(item => item.OrderId).HasColumnName("order_id");
+        entity.Property(item => item.Category).HasColumnName("category").HasMaxLength(CategoryMaxLength).IsRequired();
+        entity.Property(item => item.Supplier).HasColumnName("supplier").HasMaxLength(SupplierMaxLength);
+        entity.Property(item => item.ExpenseDate).HasColumnName("expense_date").HasColumnType("date");
+        entity.Property(item => item.Description).HasColumnName("description");
+        entity.Property(item => item.Amount).HasColumnName("amount").HasPrecision(18, 2).IsRequired();
+        entity.Property(item => item.SortOrder).HasColumnName("sort_order").IsRequired();
+        entity.Property(item => item.CreatedAt).HasColumnName("created_at").IsRequired();
+        entity.Property(item => item.CreatedBy).HasColumnName("created_by");
+        entity.Property(item => item.UpdatedAt).HasColumnName("updated_at");
+        entity.Property(item => item.UpdatedBy).HasColumnName("updated_by");
+        entity.HasIndex(item => new { item.OrderId, item.SortOrder }).HasDatabaseName("cost_items_order_id_sort_order_idx");
+        entity.HasOne<Order>().WithMany().HasForeignKey(item => item.OrderId)
+            .OnDelete(DeleteBehavior.Restrict).HasConstraintName("cost_items_order_id_fkey");
+        entity.HasOne<User>().WithMany().HasForeignKey(item => item.CreatedBy)
+            .OnDelete(DeleteBehavior.Restrict).HasConstraintName("cost_items_created_by_fkey");
+        entity.HasOne<User>().WithMany().HasForeignKey(item => item.UpdatedBy)
+            .OnDelete(DeleteBehavior.Restrict).HasConstraintName("cost_items_updated_by_fkey");
+    }
+}
