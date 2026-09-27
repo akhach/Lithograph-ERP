@@ -51,4 +51,9 @@ export const PermissionCodes = {
   rolesCreate: 'roles.create',
   rolesEdit: 'roles.edit',
   rolesManagePermissions: 'roles.manage_permissions',
+  employeesView: 'employees.view',
+  employeesCreate: 'employees.create',
+  employeesEdit: 'employees.edit',
+  employeesActivate: 'employees.activate',
+  employeesLinkUser: 'employees.link_user',
 } as const

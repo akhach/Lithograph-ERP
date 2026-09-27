@@ -30,6 +30,10 @@ export const appRouter = createBrowserRouter([
             path: 'roles',
             element: <PermissionRoute permission={PermissionCodes.rolesView} />,
           },
+          {
+            path: 'admin/employees',
+            element: <PermissionRoute permission={PermissionCodes.employeesView} />,
+          },
           { path: '*', element: <Navigate to="/" replace /> },
         ],
       },

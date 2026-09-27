@@ -1,4 +1,5 @@
 using LithographERP.Domain.Modules.Authentication;
+using LithographERP.Domain.Modules.Employees;
 using Microsoft.EntityFrameworkCore;
 
 namespace LithographERP.Infrastructure.Persistence;
@@ -16,6 +17,8 @@ public sealed class LithographDbContext(DbContextOptions<LithographDbContext> op
     public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
 
     public DbSet<Session> Sessions => Set<Session>();
+
+    public DbSet<Employee> Employees => Set<Employee>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

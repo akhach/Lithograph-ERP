@@ -1,13 +1,13 @@
 # Lithograph ERP V1 Implementation Status
 
 ## Current Phase
-28 — Employees (not started)
+29 — Clients (not started)
 
 ## Phases
 
 - [x] 26 Initial Project Setup
 - [x] 27 Authentication
-- [ ] 28 Employees
+- [x] 28 Employees
 - [ ] 29 Clients
 - [ ] 30 Projects
 - [ ] 31 Orders

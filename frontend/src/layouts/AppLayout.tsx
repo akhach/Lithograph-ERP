@@ -37,6 +37,11 @@ export function AppLayout() {
               Roles
             </Button>
           ) : null}
+          {auth.hasPermission(PermissionCodes.employeesView) ? (
+            <Button color="inherit" component={Link} to="/admin/employees">
+              Employees
+            </Button>
+          ) : null}
           <Box sx={{ flexGrow: 1 }} />
           <Button color="inherit" onClick={(event) => setMenuAnchor(event.currentTarget)}>
             {auth.user?.username}

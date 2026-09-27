@@ -3,6 +3,7 @@ import { RolesPage } from './RolesPage.tsx'
 import { useAuth } from './authContext.ts'
 import { PermissionCodes } from './authTypes.ts'
 import { UsersPage } from './UsersPage.tsx'
+import { EmployeesPage } from '../employees/EmployeesPage.tsx'
 
 export function PermissionRoute({ permission }: { permission: string }) {
   const auth = useAuth()
@@ -11,6 +12,9 @@ export function PermissionRoute({ permission }: { permission: string }) {
   }
   if (permission === PermissionCodes.usersView) {
     return <UsersPage />
+  }
+  if (permission === PermissionCodes.employeesView) {
+    return <EmployeesPage />
   }
   return <RolesPage />
 }
