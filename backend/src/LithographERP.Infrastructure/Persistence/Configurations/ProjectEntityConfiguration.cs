@@ -31,6 +31,7 @@ public sealed class ProjectConfiguration : IEntityTypeConfiguration<Project>
         entity.Property(project => project.UpdatedBy).HasColumnName("updated_by");
         entity.HasIndex(project => project.BusinessId).IsUnique().HasDatabaseName("projects_business_id_uq");
         entity.HasIndex(project => project.ClientId).HasDatabaseName("projects_client_id_idx");
+        entity.HasIndex(project => project.CreatedAt).HasDatabaseName("projects_created_at_idx");
         entity.HasOne(project => project.Client).WithMany().HasForeignKey(project => project.ClientId)
             .OnDelete(DeleteBehavior.Restrict).HasConstraintName("projects_client_id_fkey");
         entity.HasOne<User>().WithMany().HasForeignKey(project => project.CreatedBy)

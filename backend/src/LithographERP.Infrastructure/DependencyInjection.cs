@@ -4,6 +4,7 @@ using LithographERP.Application.Modules.Clients;
 using LithographERP.Application.Modules.Employees;
 using LithographERP.Application.Modules.Numbering;
 using LithographERP.Application.Modules.Orders;
+using LithographERP.Application.Modules.Dashboard;
 using LithographERP.Application.Modules.Projects;
 using LithographERP.Application.Modules.Reports;
 using LithographERP.Infrastructure.Modules.Authentication;
@@ -12,6 +13,7 @@ using LithographERP.Infrastructure.Modules.Clients;
 using LithographERP.Infrastructure.Modules.Employees;
 using LithographERP.Infrastructure.Modules.Numbering;
 using LithographERP.Infrastructure.Modules.Orders;
+using LithographERP.Infrastructure.Modules.Dashboard;
 using LithographERP.Infrastructure.Modules.Projects;
 using LithographERP.Infrastructure.Modules.Reports;
 using LithographERP.Infrastructure.Persistence;
@@ -51,6 +53,7 @@ public static class DependencyInjection
         services.AddScoped<IOrderCalculatorService, OrderCalculatorService>();
         services.AddScoped<IOrderCostService, OrderCostService>();
         services.AddScoped<IReportService, ReportService>();
+        services.AddScoped<IDashboardService, DashboardService>();
 
         return services;
     }

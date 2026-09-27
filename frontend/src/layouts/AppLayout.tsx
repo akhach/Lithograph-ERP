@@ -24,8 +24,8 @@ export function AppLayout() {
           <Typography variant="h6" component="h1" sx={{ mr: 2 }}>
             Lithograph ERP
           </Typography>
-          <Button color="inherit" component={Link} to="/">
-            Home
+          <Button color="inherit" component={Link} to="/dashboard">
+            Dashboard
           </Button>
           {auth.hasPermission(PermissionCodes.clientsView) ? (
             <Button color="inherit" component={Link} to="/clients">

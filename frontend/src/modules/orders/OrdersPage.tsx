@@ -45,6 +45,23 @@ import {
 
 type StatusFilter = 'open' | 'all' | OrderStatus
 
+function statusFromQuery(value: string | null): StatusFilter {
+  if (value === 'all' || value === 'open') {
+    return value
+  }
+  if (value && value in orderStatusLabels) {
+    return value as OrderStatus
+  }
+  return 'open'
+}
+
+function priorityFromQuery(value: string | null): '' | OrderPriority {
+  if (value && value in orderPriorityLabels) {
+    return value as OrderPriority
+  }
+  return ''
+}
+
 type Filters = {
   search: string
   status: StatusFilter
@@ -68,10 +85,10 @@ export function OrdersPage() {
   const canSeeSelling = auth.hasPermission(PermissionCodes.ordersViewSellingPrice)
   const canSeeCost = auth.hasPermission(PermissionCodes.ordersViewCostPrice)
   const canSeeProfit = canSeeSelling && canSeeCost
-  const [filters, setFilters] = useState<Filters>({
+  const [filters, setFilters] = useState<Filters>(() => ({
     search: '',
-    status: 'open',
-    priority: '',
+    status: statusFromQuery(searchParams.get('status')),
+    priority: priorityFromQuery(searchParams.get('priority')),
     clientId: '',
     projectId: '',
     orderTypeId: '',
@@ -81,7 +98,22 @@ export function OrdersPage() {
     deadlineTo: '',
     sort: 'created_at',
     page: 1,
-  })
+  }))
+  const dashboardQuery = `${searchParams.get('status') ?? ''}|${searchParams.get('priority') ?? ''}`
+  const [appliedDashboardQuery, setAppliedDashboardQuery] = useState(dashboardQuery)
+  if (appliedDashboardQuery !== dashboardQuery) {
+    setAppliedDashboardQuery(dashboardQuery)
+    setFilters((current) => ({
+      ...current,
+      status: searchParams.get('status')
+        ? statusFromQuery(searchParams.get('status'))
+        : current.status,
+      priority: searchParams.get('priority')
+        ? priorityFromQuery(searchParams.get('priority'))
+        : current.priority,
+      page: 1,
+    }))
+  }
   const [draftSearch, setDraftSearch] = useState('')
   const [orders, setOrders] = useState<OrderListItem[]>([])
   const [clients, setClients] = useState<ClientListItem[]>([])

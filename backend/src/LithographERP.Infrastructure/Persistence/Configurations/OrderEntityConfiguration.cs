@@ -73,6 +73,7 @@ public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         entity.HasIndex(order => order.ProjectId).HasDatabaseName("orders_project_id_idx");
         entity.HasIndex(order => order.OrderTypeId).HasDatabaseName("orders_order_type_id_idx");
         entity.HasIndex(order => order.Status).HasDatabaseName("orders_status_idx");
+        entity.HasIndex(order => order.Priority).HasDatabaseName("orders_priority_idx");
         entity.HasIndex(order => order.Deadline).HasDatabaseName("orders_deadline_idx");
         entity.HasIndex(order => order.CreatedAt).HasDatabaseName("orders_created_at_idx");
         entity.HasOne(order => order.Project).WithMany().HasForeignKey(order => order.ProjectId)

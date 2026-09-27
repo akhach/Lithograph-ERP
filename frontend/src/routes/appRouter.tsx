@@ -1,8 +1,8 @@
 import { createBrowserRouter, Navigate } from 'react-router'
 import { AppLayout } from '../layouts/AppLayout.tsx'
 import { AuthProvider } from '../modules/auth/AuthProvider.tsx'
-import { HomePage } from '../modules/auth/HomePage.tsx'
 import { LoginPage } from '../modules/auth/LoginPage.tsx'
+import { DashboardPage } from '../modules/dashboard/DashboardPage.tsx'
 import { PermissionRoute } from '../modules/auth/PermissionRoute.tsx'
 import { SetupPage } from '../modules/auth/SetupPage.tsx'
 import { PermissionCodes } from '../modules/auth/authTypes.ts'
@@ -36,7 +36,8 @@ export const appRouter = createBrowserRouter([
           </SessionStatus>
         ),
         children: [
-          { index: true, element: <HomePage /> },
+          { index: true, element: <Navigate to="/dashboard" replace /> },
+          { path: 'dashboard', element: <DashboardPage /> },
           {
             path: 'users',
             element: <PermissionRoute permission={PermissionCodes.usersView} />,
@@ -181,7 +182,7 @@ export const appRouter = createBrowserRouter([
               </PermissionRoute>
             ),
           },
-          { path: '*', element: <Navigate to="/" replace /> },
+          { path: '*', element: <Navigate to="/dashboard" replace /> },
         ],
       },
     ],
