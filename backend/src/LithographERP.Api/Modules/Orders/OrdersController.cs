@@ -1,5 +1,6 @@
 using LithographERP.Api.Authentication;
 using LithographERP.Application.Modules.Authentication;
+using LithographERP.Application.Modules.Calculator;
 using LithographERP.Application.Modules.Orders;
 using LithographERP.Domain.Modules.Authentication;
 using LithographERP.Infrastructure.Modules.Orders;
@@ -11,7 +12,7 @@ namespace LithographERP.Api.Modules.Orders;
 [ApiController]
 [Route("api/orders")]
 [Authorize]
-public sealed class OrdersController(IOrderAdminService orders, IAuthService auth) : ControllerBase
+public sealed class OrdersController(IOrderAdminService orders, IOrderCalculatorService calculators, IAuthService auth) : ControllerBase
 {
     [HttpGet]
     [Authorize(Policy = PermissionCatalog.Orders.View)]
@@ -67,6 +68,22 @@ public sealed class OrdersController(IOrderAdminService orders, IAuthService aut
     [Authorize(Policy = PermissionCatalog.Orders.Edit)]
     public async Task<OrderDetail> Update(Guid id, [FromBody] SaveOrderBody request, CancellationToken cancellationToken) =>
         await orders.UpdateAsync(CurrentUserId.Require(User), id, ToRequest(request), await AccessAsync(cancellationToken), cancellationToken);
+
+    [HttpPost("{orderId:guid}/change-order-type")]
+    [Authorize(Policy = PermissionCatalog.Orders.Edit)]
+    public async Task<OrderDetail> ChangeOrderType(
+        Guid orderId,
+        [FromBody] ChangeOrderTypeBody request,
+        CancellationToken cancellationToken)
+    {
+        await RequirePermissionAsync(PermissionCatalog.Calculator.Edit, cancellationToken);
+        await calculators.ChangeOrderTypeAsync(
+            CurrentUserId.Require(User),
+            orderId,
+            new ChangeOrderTypeRequest(request.OrderTypeId, request.ResetCalculator, request.UpdatedAt),
+            cancellationToken);
+        return await orders.GetAsync(orderId, await AccessAsync(cancellationToken), cancellationToken);
+    }
 
     [HttpPost("{id:guid}/status")]
     [Authorize(Policy = PermissionCatalog.Orders.ChangeStatus)]
@@ -155,6 +172,18 @@ public sealed class OrdersController(IOrderAdminService orders, IAuthService aut
         CancellationToken cancellationToken) =>
         await orders.ReorderFolderLinksAsync(orderId, request.Ids, cancellationToken);
 
+    private async Task RequirePermissionAsync(string permission, CancellationToken cancellationToken)
+    {
+        var user = await auth.GetCurrentUserAsync(CurrentUserId.Require(User), cancellationToken);
+        if (!user.Permissions.Contains(permission, StringComparer.Ordinal))
+        {
+            throw new AuthException(
+                AuthErrorCodes.PermissionDenied,
+                "You do not have permission to perform this action.",
+                StatusCodes.Status403Forbidden);
+        }
+    }
+
     private async Task<OrderFinancialAccess> AccessAsync(CancellationToken cancellationToken)
     {
         var user = await auth.GetCurrentUserAsync(CurrentUserId.Require(User), cancellationToken);
@@ -177,6 +206,15 @@ public sealed record SaveOrderBody(
     string? PreviewImagePath);
 
 public sealed record ChangeOrderStatusBody(string Status);
+
+public sealed class ChangeOrderTypeBody
+{
+    public Guid OrderTypeId { get; set; }
+
+    public bool ResetCalculator { get; set; }
+
+    public DateTimeOffset? UpdatedAt { get; set; }
+}
 
 public sealed record SaveChecklistItemBody(string Text, int? SortOrder);
 

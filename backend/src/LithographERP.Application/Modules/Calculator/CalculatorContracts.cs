@@ -13,6 +13,13 @@ public static class CalculatorErrorCodes
     public const string ValidationFailed = "TEMPLATE_VALIDATION_FAILED";
     public const string PublishFailed = "TEMPLATE_PUBLISH_FAILED";
     public const string SchemaVersionUnsupported = "TEMPLATE_SCHEMA_VERSION_UNSUPPORTED";
+    public const string NotConfigured = "CALCULATOR_NOT_CONFIGURED";
+    public const string NoPublishedVersion = "CALCULATOR_NO_PUBLISHED_VERSION";
+    public const string CalculatorNotFound = "CALCULATOR_NOT_FOUND";
+    public const string InvalidInput = "CALCULATOR_INVALID_INPUT";
+    public const string CalculationError = "CALCULATOR_CALCULATION_ERROR";
+    public const string ConcurrencyConflict = "CALCULATOR_CONCURRENCY_CONFLICT";
+    public const string TemplateVersionNotAvailable = "TEMPLATE_VERSION_NOT_AVAILABLE";
 }
 
 public static class CalculatorIssueCodes

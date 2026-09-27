@@ -44,6 +44,8 @@ public sealed class LithographApiFactory : WebApplicationFactory<Program>, IAsyn
             var db = scope.ServiceProvider.GetRequiredService<LithographDbContext>();
             await db.Database.ExecuteSqlRawAsync(
                 """
+                UPDATE calculator.order_calculators SET created_by = NULL, updated_by = NULL;
+                DELETE FROM calculator.order_calculators;
                 UPDATE orders.order_types SET calculator_template_id = NULL;
                 ALTER TABLE calculator.template_versions DISABLE TRIGGER template_versions_immutable;
                 DELETE FROM calculator.template_versions;

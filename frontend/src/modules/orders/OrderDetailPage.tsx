@@ -13,6 +13,7 @@ import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router'
+import { ApiError } from '../../api/apiClient.ts'
 import { fieldMessage, messageOf } from '../auth/apiMessages.ts'
 import { useAuth } from '../auth/authContext.ts'
 import { PermissionCodes } from '../auth/authTypes.ts'
@@ -44,6 +45,8 @@ import {
   projectOptionLabel,
   type ProjectOption,
 } from '../projects/projectsApi.ts'
+import { OrderCalculatorSection } from './OrderCalculatorSection.tsx'
+import { changeOrderType, getOrderCalculator } from './orderCalculatorApi.ts'
 
 export function OrderDetailPage() {
   const auth = useAuth()
@@ -54,6 +57,8 @@ export function OrderDetailPage() {
   const canManageFolders = auth.hasPermission(PermissionCodes.ordersManageFolderLinks)
   const canSeeSelling = auth.hasPermission(PermissionCodes.ordersViewSellingPrice)
   const canSeeCost = auth.hasPermission(PermissionCodes.ordersViewCostPrice)
+  const canUseCalculator = auth.hasPermission(PermissionCodes.calculatorView)
+  const canEditCalculator = auth.hasPermission(PermissionCodes.calculatorEdit)
   const [order, setOrder] = useState<OrderDetail | null>(null)
   const [projects, setProjects] = useState<ProjectOption[]>([])
   const [orderTypes, setOrderTypes] = useState<OrderType[]>([])
@@ -62,6 +67,9 @@ export function OrderDetailPage() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string | undefined>>({})
   const [saving, setSaving] = useState(false)
   const [confirmComplete, setConfirmComplete] = useState(false)
+  const [confirmTypeChange, setConfirmTypeChange] = useState(false)
+  const [savedOrderType, setSavedOrderType] = useState<OrderDetail['orderType'] | null>(null)
+  const [calculatorKey, setCalculatorKey] = useState(0)
 
   useEffect(() => {
     let cancelled = false
@@ -74,6 +82,7 @@ export function OrderDetailPage() {
         ])
         if (cancelled) return
         setOrder(loaded)
+        setSavedOrderType(loaded.orderType)
         setStatus(loaded.status)
         setOrderTypes(types)
         setProjects(projectPage.items)
@@ -96,23 +105,50 @@ export function OrderDetailPage() {
     setError(null)
     setFieldErrors({})
     try {
-      setOrder(
-        await updateOrder(order.id, {
-          projectId: order.project.id,
-          orderTypeId: order.orderType.id,
-          name: order.name,
-          description: order.description ?? '',
-          priority: order.priority,
-          deadline: order.deadline || undefined,
-          previewImagePath: order.previewImagePath ?? '',
-        }),
-      )
+      const saved = await updateOrder(order.id, orderInput(order))
+      setOrder(saved)
+      setSavedOrderType(saved.orderType)
     } catch (caught: unknown) {
+      if (
+        caught instanceof ApiError &&
+        caught.code === 'ORDER_TYPE_CHANGE_REQUIRES_CALCULATOR_RESET'
+      ) {
+        setConfirmTypeChange(true)
+        return
+      }
       setError(messageOf(caught))
       setFieldErrors({
         name: fieldMessage(caught, 'name'),
         previewImagePath: fieldMessage(caught, 'previewImagePath'),
       })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function confirmOrderTypeChange() {
+    if (!order) return
+    setSaving(true)
+    setError(null)
+    try {
+      const calculator = await getOrderCalculator(order.id)
+      const changed = await changeOrderType(order.id, {
+        orderTypeId: order.orderType.id,
+        resetCalculator: true,
+        updatedAt: calculator.updatedAt,
+      })
+      const saved = await updateOrder(
+        changed.id,
+        orderInput({ ...order, orderType: changed.orderType }),
+      )
+      setOrder(saved)
+      setSavedOrderType(saved.orderType)
+      setStatus(saved.status)
+      setConfirmTypeChange(false)
+      setCalculatorKey((key) => key + 1)
+    } catch (caught: unknown) {
+      setError(messageOf(caught))
+      setConfirmTypeChange(false)
     } finally {
       setSaving(false)
     }
@@ -398,10 +434,24 @@ export function OrderDetailPage() {
         </Button>
       </Stack>
 
-      <Typography variant="h6" component="h3">
-        Calculator
-      </Typography>
-      <Alert severity="info">Calculator module not configured.</Alert>
+      {canUseCalculator ? (
+        <>
+          <Typography variant="h6" component="h3">
+            Calculator
+          </Typography>
+          <OrderCalculatorSection
+            orderId={order.id}
+            canEdit={canEditCalculator}
+            reloadKey={calculatorKey}
+            onOrderChanged={async () => {
+              const loaded = await getOrder(order.id)
+              setOrder(loaded)
+              setSavedOrderType(loaded.orderType)
+              setStatus(loaded.status)
+            }}
+          />
+        </>
+      ) : null}
 
       <ChecklistSection
         orderId={order.id}
@@ -421,6 +471,41 @@ export function OrderDetailPage() {
         onError={setError}
       />
 
+      <Dialog
+        open={confirmTypeChange}
+        onClose={() => {
+          setConfirmTypeChange(false)
+          if (savedOrderType) {
+            setOrder({ ...order, orderType: savedOrderType })
+          }
+        }}
+      >
+        <DialogTitle>Change Order Type?</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Changing the Order Type requires resetting the Calculator. Entered Calculator values
+            will be cleared.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setConfirmTypeChange(false)
+              if (savedOrderType) setOrder({ ...order, orderType: savedOrderType })
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            disabled={saving}
+            onClick={() => void confirmOrderTypeChange()}
+          >
+            Reset Calculator and change type
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Dialog open={confirmComplete} onClose={() => setConfirmComplete(false)}>
         <DialogTitle>Complete order?</DialogTitle>
         <DialogContent>
@@ -438,6 +523,18 @@ export function OrderDetailPage() {
       </Dialog>
     </Stack>
   )
+}
+
+function orderInput(order: OrderDetail) {
+  return {
+    projectId: order.project.id,
+    orderTypeId: order.orderType.id,
+    name: order.name,
+    description: order.description ?? '',
+    priority: order.priority,
+    deadline: order.deadline || undefined,
+    previewImagePath: order.previewImagePath ?? '',
+  }
 }
 
 function personLabel(person: OrderDetail['team']['owner']): string {

@@ -120,6 +120,14 @@ public sealed class OrderAdminService(
 
         if (request.OrderTypeId != order.OrderTypeId)
         {
+            if (await db.OrderCalculators.AnyAsync(calculator => calculator.OrderId == order.Id, cancellationToken))
+            {
+                throw new AuthException(
+                    OrderErrorCodes.OrderTypeChangeRequiresCalculatorReset,
+                    "Changing the Order Type requires an explicit Calculator reset.",
+                    409);
+            }
+
             await RequireSelectableOrderTypeAsync(request.OrderTypeId, cancellationToken);
             order.OrderTypeId = request.OrderTypeId;
         }
@@ -497,7 +505,10 @@ public sealed class OrderAdminService(
             throw OrderNotFound();
         }
 
-        return ToDetail(order, access);
+        var calculatorConfigured = await db.OrderCalculators.AnyAsync(
+            calculator => calculator.OrderId == order.Id,
+            cancellationToken);
+        return ToDetail(order, access, calculatorConfigured);
     }
 
     private async Task<Order> LoadAsync(Guid orderId, CancellationToken cancellationToken)
@@ -678,7 +689,7 @@ public sealed class OrderAdminService(
             Money(access.CostPrice, row.CostPrice),
             Profit(access, row.SellingPrice, row.CostPrice));
 
-    private static OrderDetail ToDetail(Order order, OrderFinancialAccess access)
+    private static OrderDetail ToDetail(Order order, OrderFinancialAccess access, bool calculatorConfigured)
     {
         var checklist = order.ChecklistItems.OrderBy(item => item.SortOrder).ThenBy(item => item.Id).Select(ToChecklist).ToArray();
         var progress = ChecklistProgress.Calculate(order.ChecklistItems.Select(item => item.IsCompleted));
@@ -696,7 +707,7 @@ public sealed class OrderAdminService(
             order.Deadline,
             order.PreviewImagePath,
             ToTeam(order.Project),
-            CalculatorConfigured: false,
+            calculatorConfigured,
             new ChecklistProgressResponse(progress.Completed, progress.Total),
             checklist,
             links,

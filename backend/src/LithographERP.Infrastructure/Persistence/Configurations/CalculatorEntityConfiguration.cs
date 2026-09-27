@@ -75,3 +75,38 @@ public sealed class CalculatorTemplateVersionConfiguration : IEntityTypeConfigur
             .OnDelete(DeleteBehavior.Restrict).HasConstraintName("template_versions_published_by_fkey");
     }
 }
+
+public sealed class OrderCalculatorConfiguration : IEntityTypeConfiguration<OrderCalculator>
+{
+    public void Configure(EntityTypeBuilder<OrderCalculator> entity)
+    {
+        entity.ToTable("order_calculators", "calculator");
+        entity.HasKey(calculator => calculator.Id);
+        entity.Property(calculator => calculator.Id).HasColumnName("id");
+        entity.Property(calculator => calculator.OrderId).HasColumnName("order_id");
+        entity.Property(calculator => calculator.TemplateVersionId).HasColumnName("template_version_id");
+        entity.Property(calculator => calculator.FieldValues)
+            .HasColumnName("field_values")
+            .HasColumnType("jsonb")
+            .HasDefaultValueSql("'{}'::jsonb")
+            .IsRequired();
+        entity.Property(calculator => calculator.CreatedAt).HasColumnName("created_at").IsRequired();
+        entity.Property(calculator => calculator.CreatedBy).HasColumnName("created_by");
+        entity.Property(calculator => calculator.UpdatedAt).HasColumnName("updated_at").IsRequired();
+        entity.Property(calculator => calculator.UpdatedBy).HasColumnName("updated_by");
+        entity.Property(calculator => calculator.LastCalculatedAt).HasColumnName("last_calculated_at");
+        entity.HasIndex(calculator => calculator.OrderId)
+            .IsUnique()
+            .HasDatabaseName("order_calculators_order_id_uq");
+        entity.HasIndex(calculator => calculator.TemplateVersionId)
+            .HasDatabaseName("order_calculators_template_version_id_idx");
+        entity.HasOne<Order>().WithMany().HasForeignKey(calculator => calculator.OrderId)
+            .OnDelete(DeleteBehavior.Restrict).HasConstraintName("order_calculators_order_id_fkey");
+        entity.HasOne<CalculatorTemplateVersion>().WithMany().HasForeignKey(calculator => calculator.TemplateVersionId)
+            .OnDelete(DeleteBehavior.Restrict).HasConstraintName("order_calculators_template_version_id_fkey");
+        entity.HasOne<User>().WithMany().HasForeignKey(calculator => calculator.CreatedBy)
+            .OnDelete(DeleteBehavior.Restrict).HasConstraintName("order_calculators_created_by_fkey");
+        entity.HasOne<User>().WithMany().HasForeignKey(calculator => calculator.UpdatedBy)
+            .OnDelete(DeleteBehavior.Restrict).HasConstraintName("order_calculators_updated_by_fkey");
+    }
+}

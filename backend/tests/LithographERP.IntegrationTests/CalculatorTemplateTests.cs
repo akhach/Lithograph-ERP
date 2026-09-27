@@ -256,11 +256,17 @@ public class CalculatorTemplateTests(LithographApiFactory factory)
             WHERE table_schema = 'calculator' AND table_name = 'template_versions' AND column_name = 'definition'
             """).SingleAsync();
         Assert.Equal("jsonb", columnType);
+        Assert.Equal("order_calculators", await db.Database.SqlQueryRaw<string>(
+            """
+            SELECT table_name AS "Value"
+            FROM information_schema.tables
+            WHERE table_schema = 'calculator' AND table_name = 'order_calculators'
+            """).SingleAsync());
         Assert.False(await db.Database.SqlQueryRaw<string>(
             """
             SELECT table_name AS "Value"
             FROM information_schema.tables
-            WHERE table_schema = 'calculator' AND table_name IN ('order_calculators', 'cost_items')
+            WHERE table_schema = 'calculator' AND table_name = 'cost_items'
             """).AnyAsync());
         var nullable = await db.Database.SqlQueryRaw<string>(
             """

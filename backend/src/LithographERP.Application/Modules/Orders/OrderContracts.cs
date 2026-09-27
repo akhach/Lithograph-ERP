@@ -9,6 +9,7 @@ public static class OrderErrorCodes
     public const string OrderTypeInactive = "ORDER_TYPE_INACTIVE";
     public const string OrderTypeNameAlreadyExists = "ORDER_TYPE_NAME_ALREADY_EXISTS";
     public const string ProjectChangeNotAllowed = "ORDER_PROJECT_CHANGE_NOT_ALLOWED";
+    public const string OrderTypeChangeRequiresCalculatorReset = "ORDER_TYPE_CHANGE_REQUIRES_CALCULATOR_RESET";
     public const string ChecklistItemNotFound = "CHECKLIST_ITEM_NOT_FOUND";
     public const string FolderLinkNotFound = "FOLDER_LINK_NOT_FOUND";
     public const string BusinessIdConflict = "ORDER_BUSINESS_ID_CONFLICT";
